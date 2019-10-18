@@ -16,7 +16,10 @@ Depends: R (>= 3.5.0)
 Imports: 
     methods,
     ggplot2,
-    cowplot
+    cowplot,
+    dplyr,
+    nycflights13,
+    maps
 Suggests: 
     roxygen2,
     testthat,
