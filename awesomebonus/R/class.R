@@ -1,6 +1,6 @@
-#' A Reference Class.
+#' Ridge Regression Class.
 #'
-#' \code{linreg()} calculates a number of statistics (see section \code{"Fields"}) by default given both arguments: formula and data. 
+#' \code{ridgereg()} calculates a number of statistics (see section \code{"Fields"}) by default given both arguments: formula, data and lambda. 
 #' It also stores diverse functions implemented using RC object oriented programming. Find more information regarding these functions on section \code{"Methods"}.
 #' 
 #'
@@ -30,11 +30,11 @@
 #' @importFrom ggplot2 ggplot
 #' @importFrom cowplot plot_grid
 #'
-#' @export linreg
-#' @exportClass linreg
+#' @export ridgereg
+#' @exportClass ridgereg
 #'
 
-linreg <- setRefClass ("linreg",
+ridgereg <- setRefClass ("ridgereg",
   fields = c (
     formula = "formula",
     data = "ANY",
@@ -50,19 +50,17 @@ linreg <- setRefClass ("linreg",
     p_values = "ANY",
     arguments = "ANY"),
   methods = c (
-    initialize = function(formula, data){
-      "Initialize function calculates all values needed from formula and data."
+    initialize = function(formula, data, lambda){
+      "Initialize function calculates all values needed from formula, data and lambda."
       ## 0. Check that the class of the formula argument is correct:
-      stopifnot(class(formula) == "formula")
-      #base::print(as.list(sys.calls()))
-      # Extract arguments
-      #arg_string <- as.character(as.list(sys.calls())[[1]]) # only works for user, not for testthat or R CMD Check
-      arg_string <- paste(as.list(sys.calls()), collapse='')
-      #formula_pattern <- "(?<=(linreg\$new\())([^,=]*)(?=\,.*\))|(?<=(linreg\$new*\((formula)=))([^,]*)(?=\,.*\))"
-      #data_pattern <- "(?<=(linreg\\$new.*\\(.*)(data).*=?)(\\w+)(?=\\))|(?<=(linreg\\$new.*\\(.*),)(\\w+)(?=\\))"
+      stopifnot(class(formula) == "formula",
+                is.data.frame(data),
+                length(lambda) == 1)
+
       
       # Extract function call
-      function_pattern <- "linreg\\$new\\(.*?\\)"
+      arg_string <- paste(as.list(sys.calls()), collapse='')
+      function_pattern <- "ridgereg\\$new\\(.*?\\)"
       function_call <- regmatches(arg_string, regexpr(function_pattern, arg_string, perl = TRUE))
       
       # From function call, extract data argument
@@ -184,19 +182,3 @@ linreg <- setRefClass ("linreg",
     }
   )
 )
-
-# customer <- setRefClass ("customer",
-#    fields = c(
-#      money = "ANY"),
-#    methods = c(
-#      initialize = function(money){
-#        money <<- money * 2
-#      },
-#      add_funds = function(amount){
-#        money <<- money + amount
-#      },
-#      show = function(){
-#        print("Money is not infinite")
-#      }
-#    )
-# )
