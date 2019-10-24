@@ -93,10 +93,10 @@ ridgereg <- setRefClass ("ridgereg",
       base::print("Use ...$print()")
     },
     print = function() {
-      "Same as show, but allows for linreg$print(). Will break print(linreg) that show allows, bad test case!"
+      "Same as show, but allows for ridgereg$print(). Will break print(ridgereg) that show allows."
       
       model <- list()
-      model$Call <- paste("linreg(formula = ", arguments[1], ", data = ", arguments[2], ", lambda = ", arguments[2], ")", sep="")
+      model$Call <- paste("ridgereg(formula = ", arguments[1], ", data = ", arguments[2], ", lambda = ", arguments[2], ")", sep="")
       model$Coefficients <- regression_coefficients
       base::print(model)
     },
