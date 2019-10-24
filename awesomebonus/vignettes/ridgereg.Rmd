@@ -1,0 +1,125 @@
+---
+title: "awesomebonus: A ridge regression package"
+author: "Martin Svensson and Laura Julià Melis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{awesomebonus: A ridge regression package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+## 1. Introduction.
+The **awesomebonus** package contains an object with class ridgereg, created with the RC object oriented system. This object is helpful to handle ridge regression models as it provides multiple methods such as `pred()` and `coef()` to obtain the vector of fitted values and the regressions coefficients of a given regression model, respectively.
+
+## 2. ridgereg( ) description.
+The class object `ridgereg()` stores the statistics seen in the section above as *fields* and contains multiple functions (*methods*) to obtain outputs related to ridge regression models. The name and a brief description of each one is listed below. 
+
+**1. Fields.**
+ 
+  - `formula:` an object of class "formula".
+  - `data:` a data frame.
+  - `p_values:` the p-values for each coefficient.
+  - `lambda:` an integer of ridge constant.
+  - `fitted_values:` the fitted values.
+
+**2. Methods.**
+ 
+  - `initialize()` calculates all the statistics described in section **2** from formula and data.
+  - `print()` prints out the coefficients and coefficient names.
+  - `pred()` returns the predicted values.
+  - `coef()` returns the coefficients as a named vector.
+
+## 3. Example.
+This section shows how to use `ridgereg()` on a well known dataset such as the BostonHousing dataset (it can be found in the mlbench package).
+```{r include=FALSE}
+library(awesomebonus)
+library(caret)
+library(mlbench)
+```
+
+### 3.1. Initialization.
+First we will divide the dataset into a test and training dataset:
+```{r}
+data("BostonHousing")
+
+set.seed(107)
+inTrain <- createDataPartition(
+  y = BostonHousing$medv,
+  ## the outcome data are needed
+  p = .8,
+  ## The percentage of data in the
+  ## training set
+  list = FALSE
+)
+
+training <- BostonHousing[ inTrain,] 
+testing  <- BostonHousing[-inTrain,]
+```
+
+### 3.2. Fitting a linear regression model.
+Now, we will fit a linear regression model with forward selection of covariates on the *training* dataset.
+```{r}
+linregFit <- train(medv ~ .,
+                   data= training,
+                   method = 'leapForward', # to fit linear regression with forward selection
+                   preProc = c("center", "scale") # center and scale the predictors
+                   )
+linregFit
+```
+
+
+### 3.3. Evaluating the performance of this model on the training dataset.
+As our outcome is numeric, we will use the function `postResample` in order to estimate the root mean squared error (RMSE), the coefficient of determination ($R^2$), and the mean absolute error (MAE).
+```{r}
+pred <- predict(linregFit, testing)
+postResample(pred = pred, obs = testing$medv)
+```
+
+The RMSE indicates how close the observed data points are to the model’s predicted values, it can be interpreted as the standard deviation of the unexplained variance, and has the same units as the response variable. A low RMSE indicates a good fit and if we observe that our dependent variable has a range of 44.4 (values between 5.6 and 50) and a standard deviation of 8.74 then we can conclude that the RMSE is low and it indicates a good fit.
+
+The Rsquared is a goodness-of-fit measure ans also indicates how close the data are to the fitted regression line. The closer to 1 the $R^2$ value is, the better the model fits the data because it means that the model explains a lot of the variability of the response data around its mean. In our case, the model explains 68.8% of the variability so, again, we can say that this is a good model.
+
+
+### 3.4. Fitting a ridge regression model using your ridgereg() function to the training dataset.
+
+To use our own method, the ridgereg() function, ... https://topepo.github.io/caret/using-your-own-model-in-train.html
+```{r}
+ridgereg <- list(type = "Regression",
+              library = "awesomebonus",
+              parameters=,
+              fit=,
+              predict=,
+              loop = NULL) 
+
+linregFit_ridgereg <- train(medv ~ ., 
+                            data = training, 
+                            method = "ridgereg", 
+                            preProc = c("center", "scale")
+                            )
+
+# Setting "formula", "data" and "lambda" arguments
+ridge <- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)
+```
+
+### 3.5. Finding the best hyperparameter value for λ 
+```{r}
+fitControl <- trainControl(method = "none",
+                           number = 10,
+                           repeats = 3,
+                           summaryFunction = defaultSummary,
+                           search = "random")
+
+set.seed(825)
+rda_fit <- train(Class ~ ., data = training, 
+                  method = "rda",
+                  metric = "ROC",
+                  tuneLength = 30,
+                  trControl = fitControl)
+rda_fit
+```
+
+
+## References.
+* Ridge Regression: <https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/NCSS/Ridge_Regression.pdf>
+* Caret package: <https://cran.r-project.org/web/packages/caret/caret.pdf>
+* Vignettes: <http://r-pkgs.had.co.nz/vignettes.html>
