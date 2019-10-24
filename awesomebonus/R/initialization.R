@@ -22,14 +22,12 @@ for(j in 1:length(name_indep)){
 ## 2. Calculations using least squares. 
 x <- model.matrix(formula, data) # X matrix (independent variables)
 name_dep <- all.vars(formula)[1] # Dependent variable/s name/s
-Y <- data[, name_dep] # y (dependent variable/s)
-I <- matrix(0, ncol=ncol(x), nrow=nrow(x))
-diag(I) <- 1
+y <- data[, name_dep] # y (dependent variable/s)
+I <- diag(ncol(x))
 
 # Regression coefficients:
-xtx <- t(x) %*% x
-xtx_lambda <- xtx + (lambda*I)
-beta_hat <- solve(xtx) %*% t(x) %*% y
+xtx_lambda <- t(x) %*% x + lambda*I
+beta_hat <- solve(xtx_lambda) %*% t(x) %*% y
 
 # The fitted values:
 y_hat <- x %*% beta_hat
