@@ -11,8 +11,8 @@
 #' @field lambda a integer.
 #' 
 #' @examples
-#' data("iris")
-#' example <- linreg$new(formula=Petal.Length~Species, data=iris)
+#' data("flights")
+#' example <- ridgereg$new(formula = air_time~dep_delay + arr_delay, data = flights, lambda = 1)
 #' 
 #' @references Reference Classes: \url{http://adv-r.had.co.nz/R5.html}
 #' 
@@ -106,7 +106,7 @@ ridgereg <- setRefClass ("ridgereg",
     },
     coef = function(){
       "Returns the coefficients."
-      return(regression_coefficients)
+      return(regression_coefficients[-1])
     }
   )
 )
