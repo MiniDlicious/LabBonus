@@ -84,18 +84,79 @@ The Rsquared is a goodness-of-fit measure ans also indicates how close the data 
 
 To use our own method, the ridgereg() function, ... https://topepo.github.io/caret/using-your-own-model-in-train.html
 ```{r}
-ridgereg <- list(type = "Regression",
+rr <- list(type = "Regression",
               library = "awesomebonus",
-              parameters=,
-              fit=,
-              predict=,
-              loop = NULL) 
+              loop = NULL)
+
+prm <- data.frame(parameter = "lambda",
+                  class = "numeric",
+                  label = "Lambda")
+
+rr$parameters <- prm
+
+rrGrid <- function(x, y, len = NULL, search = grid) {
+  if(search == grid) {
+    out <- expand.grid(lambda = c(0.01, 100))
+  } else {
+    stop('random search not yet implemented')
+  }
+  return(out)
+}
+
+rr$grid <- rrGrid
+
+# Probably needs to use formula??
+rrFit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+  library(awesomebonus)
+  ridgereg(train_input = x,
+                    train_outcome = y,
+                    lambda = param$lambda,
+                    ...)
+}
+
+rr$fit <- rrFit
+
+rr$levels <- function(x) x@levels
+
+rrPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
+  predict(modelFit, newdata)
+}
+
+rr$predict <- rrPred
+
+rrProb <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
+  predict(modelFit, newdata, type = "prob")
+}
+
+rr$prob <- rrProb
+
+rrSort <- function(x) x[order(x$lambda),]
+
+rr$sort <- rrSort
+
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 5)
+
+rGrid <- expand.grid(lambda = c(0.1, 0.3))
+
+set.seed(825)
+data("iris")
+rrTune <- train(x = iris[, 1:4],
+                  y = iris[, 5],
+                  method = rr,
+                  trControl = fitControl,
+                  tuneGrid = rGrid,
+                  preProcess = c(center, scale),
+                  nUnits = 20)
 
 linregFit_ridgereg <- train(medv ~ ., 
                             data = training, 
                             method = "ridgereg", 
                             preProc = c("center", "scale")
                             )
+
+
 
 # Setting "formula", "data" and "lambda" arguments
 ridge <- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)

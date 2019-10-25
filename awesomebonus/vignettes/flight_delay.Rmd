@@ -23,22 +23,25 @@ airport_data <- nycflights13::airports
 weather_data <- nycflights13::weather
 
 # Drop columns not used in prediction
-flights_data <- select(flights_data, -c(year, month, day, arr_time, dep_time, sched_arr_time, 
-                        dep_delay, carrier, flight, tailnum, origin, hour, minute, time_hour, air_time))
+flights_data <- select(flights_data, -c(year, month, day, arr_time, dep_time, sched_dep_time, sched_arr_time, 
+                        carrier, flight, tailnum, hour, minute, air_time))
 airport_data <- select(airport_data, -c(name, tz, dst, tzone))
-weather_data <- select(weather_data, -c(day, wind_gust, time_hour))
+weather_data <- select(weather_data, -c(day, wind_gust))
 
 # Join data sets
 flights_data <- dplyr::rename(flights_data, faa = dest)
-weather_data <- dplyr::rename(weather_data, faa = origin)
-joined_data <- inner_join(flights_data, airport_data, by="faa") # Discard data mismatches using inner join
-joined_data <- inner_join(joined_data, weather_data, by="faa") # Discard data mismatches using inner join
+joined_data <- left_join(flights_data, weather_data, by=c("origin", "time_hour"))
+joined_data <- left_join(joined_data, airport_data, by="faa")
+
+# Remove additional columns
+joined_data <- select(joined_data, -c(faa, origin, time_hour, year))
 
 # Clean data from NA
 joined_data <- na.omit(joined_data)
 
-# Remove remaining columns not used in model
-joined_data <- select(joined_data, -c(faa))
+# Add arrival and departure delay
+joined_data$total_delay <- joined_data$arr_delay + joined_data$dep_delay
+
 ```
 
 
@@ -46,17 +49,24 @@ joined_data <- select(joined_data, -c(faa))
 # Use Caret to divide the dataset into test (5%), train (80%) and validation (15%).
 library(caret)
 set.seed(42)
-trainIndex <- createDataPartition(joined_data$arr_delay, p = .8, 
+trainIndex <- createDataPartition(joined_data$total_delay, p = .8, 
                                   list = FALSE)
-Totalvalidation <- joined_data[-trainIndex,]
-validationIndex <- createDataPartition(Totalvalidation$arr_delay, p = .75, 
+trainSet <- joined_data[trainIndex, ]
+nontrainSet <- joined_data[-trainIndex, ]
+validationIndex <- createDataPartition(nontrainSet$total_delay, p = .75, 
                                   list = FALSE, 
                                   times = 1)
-testSet <- joined_data[-validationIndex]
+validationSet <- joined_data[validationIndex, ]
+testSet <- joined_data[-validationIndex, ]
 
 ```
 
+```{r}
+# Use Caret to divide the dataset into test (5%), train (80%) and validation (15%).
+library(corrplot)
+corrplot.mixed(cor(trainSet), order="hclust", tl.col="black")
 
+```
 
 ```{r}
 # Make predictions and evaluate
@@ -73,10 +83,20 @@ mae <- function(error)
     mean(abs(error))
 }
 
-predictions <- ridgereg$new(formula = arr_d~dep_delay + arr_delay, data = flights, lambda = 1)
+predictions <- ridgereg$new(formula = dep_delay~temp + humid + wind_speed + visib, data = trainSet, lambda = 1000)
+
+print(predictions$regression_coefficients)
+print(rmse(predictions$fitted_values - trainSet$dep_delay))
+
 
 ```
 
 
+```{r}
+# Plot
+library(ggplot2)
+ggplot(trainSet) +
+  geom_point(aes(y = predictions$fitted_values, x = trainSet$dep_delay), colour = 'red', size = 3)
 
+```
 
