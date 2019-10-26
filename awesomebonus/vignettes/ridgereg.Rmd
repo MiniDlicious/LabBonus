@@ -108,10 +108,8 @@ rr$grid <- rrGrid
 # Probably needs to use formula??
 rrFit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
   library(awesomebonus)
-  ridgereg(train_input = x,
-                    train_outcome = y,
-                    lambda = param$lambda,
-                    ...)
+  print(head(data))
+  ridgereg(y ~ x, data = as.data.frame(data), lambda = param$lambda, ...)
 }
 
 rr$fit <- rrFit
@@ -135,48 +133,45 @@ rrSort <- function(x) x[order(x$lambda),]
 rr$sort <- rrSort
 
 fitControl <- trainControl(method = "repeatedcv",
-                           number = 10,
-                           repeats = 5)
+                           number = 1,
+                           repeats = 1)
 
 rGrid <- expand.grid(lambda = c(0.1, 0.3))
 
 set.seed(825)
-data("iris")
-rrTune <- train(x = iris[, 1:4],
-                  y = iris[, 5],
-                  method = rr,
-                  trControl = fitControl,
-                  tuneGrid = rGrid,
-                  preProcess = c(center, scale),
-                  nUnits = 20)
-
-linregFit_ridgereg <- train(medv ~ ., 
-                            data = training, 
-                            method = "ridgereg", 
-                            preProc = c("center", "scale")
-                            )
-
+# rrTune <- train(medv ~ .,
+#                 data = training,
+#                   method = rr,
+#                   trControl = fitControl,
+#                   tuneGrid = rGrid)
+# 
+# linregFit_ridgereg <- train(medv ~ ., 
+#                             data = training, 
+#                             method = "ridgereg", 
+#                             preProc = c("center", "scale")
+#                             )
+# 
 
 
 # Setting "formula", "data" and "lambda" arguments
-ridge <- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)
+#ridge <- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)
 ```
 
 ### 3.5. Finding the best hyperparameter value for λ 
 ```{r}
-fitControl <- trainControl(method = "none",
-                           number = 10,
-                           repeats = 3,
-                           summaryFunction = defaultSummary,
-                           search = "random")
-
-set.seed(825)
-rda_fit <- train(Class ~ ., data = training, 
-                  method = "rda",
-                  metric = "ROC",
-                  tuneLength = 30,
-                  trControl = fitControl)
-rda_fit
+# fitControl <- trainControl(method = "none",
+#                            number = 10,
+#                            repeats = 3,
+#                            summaryFunction = defaultSummary,
+#                            search = "random")
+# 
+# set.seed(825)
+# rda_fit <- train(Class ~ ., data = training, 
+#                   method = "rda",
+#                   metric = "ROC",
+#                   tuneLength = 30,
+#                   trControl = fitControl)
+# rda_fit
 ```
 
 

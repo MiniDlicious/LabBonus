@@ -19,7 +19,8 @@ Imports:
     cowplot,
     dplyr,
     nycflights13,
-    maps
+    maps,
+    caret
 Suggests: 
     roxygen2,
     testthat,

@@ -30,9 +30,9 @@ It also stores diverse functions implemented using RC object oriented programmin
 
 \item{\code{initialize(formula, data, lambda)}}{Initialize function calculates all values needed from formula, data and lambda.}
 
-\item{\code{predict()}}{Returns the predictions.}
+\item{\code{predict(newdata)}}{Calculate predictions based on fitted values and new x data.}
 
-\item{\code{print()}}{Same as show, but allows for linreg$print(). Will break print(linreg) that show allows, bad test case!}
+\item{\code{print()}}{Same as show, but allows for ridgereg$print(). Will break print(ridgereg) that show allows.}
 }}
 
 \examples{

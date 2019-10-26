@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Martin Svensson and Laura Julià Melis" />
+
+
+<title>awesomebonus: A ridge regression package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">awesomebonus: A ridge regression package</h1>
+<h4 class="author">Martin Svensson and Laura Julià Melis</h4>
+
+
+
+<div id="introduction." class="section level2">
+<h2>1. Introduction.</h2>
+<p>The <strong>awesomebonus</strong> package contains an object with class ridgereg, created with the RC object oriented system. This object is helpful to handle ridge regression models as it provides multiple methods such as <code>pred()</code> and <code>coef()</code> to obtain the vector of fitted values and the regressions coefficients of a given regression model, respectively.</p>
+</div>
+<div id="ridgereg-description." class="section level2">
+<h2>2. ridgereg( ) description.</h2>
+<p>The class object <code>ridgereg()</code> stores the statistics seen in the section above as <em>fields</em> and contains multiple functions (<em>methods</em>) to obtain outputs related to ridge regression models. The name and a brief description of each one is listed below.</p>
+<p><strong>1. Fields.</strong></p>
+<ul>
+<li><code>formula:</code> an object of class “formula”.</li>
+<li><code>data:</code> a data frame.</li>
+<li><code>p_values:</code> the p-values for each coefficient.</li>
+<li><code>lambda:</code> an integer of ridge constant.</li>
+<li><code>fitted_values:</code> the fitted values.</li>
+</ul>
+<p><strong>2. Methods.</strong></p>
+<ul>
+<li><code>initialize()</code> calculates all the statistics described in section <strong>2</strong> from formula and data.</li>
+<li><code>print()</code> prints out the coefficients and coefficient names.</li>
+<li><code>pred()</code> returns the predicted values.</li>
+<li><code>coef()</code> returns the coefficients as a named vector.</li>
+</ul>
+</div>
+<div id="example." class="section level2">
+<h2>3. Example.</h2>
+<p>This section shows how to use <code>ridgereg()</code> on a well known dataset such as the BostonHousing dataset (it can be found in the mlbench package).</p>
+<div id="initialization." class="section level3">
+<h3>3.1. Initialization.</h3>
+<p>First we will divide the dataset into a test and training dataset:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">data</span>(<span class="st">&quot;BostonHousing&quot;</span>)</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="kw">set.seed</span>(<span class="dv">107</span>)</a>
+<a class="sourceLine" id="cb1-4" title="4">inTrain &lt;-<span class="st"> </span><span class="kw">createDataPartition</span>(</a>
+<a class="sourceLine" id="cb1-5" title="5">  <span class="dt">y =</span> BostonHousing<span class="op">$</span>medv,</a>
+<a class="sourceLine" id="cb1-6" title="6">  <span class="co">## the outcome data are needed</span></a>
+<a class="sourceLine" id="cb1-7" title="7">  <span class="dt">p =</span> <span class="fl">.8</span>,</a>
+<a class="sourceLine" id="cb1-8" title="8">  <span class="co">## The percentage of data in the</span></a>
+<a class="sourceLine" id="cb1-9" title="9">  <span class="co">## training set</span></a>
+<a class="sourceLine" id="cb1-10" title="10">  <span class="dt">list =</span> <span class="ot">FALSE</span></a>
+<a class="sourceLine" id="cb1-11" title="11">)</a>
+<a class="sourceLine" id="cb1-12" title="12"></a>
+<a class="sourceLine" id="cb1-13" title="13">training &lt;-<span class="st"> </span>BostonHousing[ inTrain,] </a>
+<a class="sourceLine" id="cb1-14" title="14">testing  &lt;-<span class="st"> </span>BostonHousing[<span class="op">-</span>inTrain,]</a></code></pre></div>
+</div>
+<div id="fitting-a-linear-regression-model." class="section level3">
+<h3>3.2. Fitting a linear regression model.</h3>
+<p>Now, we will fit a linear regression model with forward selection of covariates on the <em>training</em> dataset.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">linregFit &lt;-<span class="st"> </span><span class="kw">train</span>(medv <span class="op">~</span><span class="st"> </span>.,</a>
+<a class="sourceLine" id="cb2-2" title="2">                   <span class="dt">data=</span> training,</a>
+<a class="sourceLine" id="cb2-3" title="3">                   <span class="dt">method =</span> <span class="st">&#39;leapForward&#39;</span>, <span class="co"># to fit linear regression with forward selection</span></a>
+<a class="sourceLine" id="cb2-4" title="4">                   <span class="dt">preProc =</span> <span class="kw">c</span>(<span class="st">&quot;center&quot;</span>, <span class="st">&quot;scale&quot;</span>) <span class="co"># center and scale the predictors</span></a>
+<a class="sourceLine" id="cb2-5" title="5">                   )</a>
+<a class="sourceLine" id="cb2-6" title="6">linregFit</a></code></pre></div>
+<pre><code>## Linear Regression with Forward Selection 
+## 
+## 407 samples
+##  13 predictor
+## 
+## Pre-processing: centered (13), scaled (13) 
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 407, 407, 407, 407, 407, 407, ... 
+## Resampling results across tuning parameters:
+## 
+##   nvmax  RMSE      Rsquared   MAE     
+##   2      5.871234  0.6214965  4.189612
+##   3      5.528025  0.6629391  3.867903
+##   4      5.504101  0.6657585  3.803333
+## 
+## RMSE was used to select the optimal model using the smallest value.
+## The final value used for the model was nvmax = 4.</code></pre>
+</div>
+<div id="evaluating-the-performance-of-this-model-on-the-training-dataset." class="section level3">
+<h3>3.3. Evaluating the performance of this model on the training dataset.</h3>
+<p>As our outcome is numeric, we will use the function <code>postResample</code> in order to estimate the root mean squared error (RMSE), the coefficient of determination (<span class="math inline">\(R^2\)</span>), and the mean absolute error (MAE).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">pred &lt;-<span class="st"> </span><span class="kw">predict</span>(linregFit, testing)</a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">postResample</span>(<span class="dt">pred =</span> pred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
+<pre><code>##      RMSE  Rsquared       MAE 
+## 4.6659300 0.7070089 3.1324774</code></pre>
+<p>The RMSE indicates how close the observed data points are to the model’s predicted values, it can be interpreted as the standard deviation of the unexplained variance, and has the same units as the response variable. A low RMSE indicates a good fit and if we observe that our dependent variable has a range of 44.4 (values between 5.6 and 50) and a standard deviation of 8.74 then we can conclude that the RMSE is low and it indicates a good fit.</p>
+<p>The Rsquared is a goodness-of-fit measure ans also indicates how close the data are to the fitted regression line. The closer to 1 the <span class="math inline">\(R^2\)</span> value is, the better the model fits the data because it means that the model explains a lot of the variability of the response data around its mean. In our case, the model explains 68.8% of the variability so, again, we can say that this is a good model.</p>
+</div>
+<div id="fitting-a-ridge-regression-model-using-your-ridgereg-function-to-the-training-dataset." class="section level3">
+<h3>3.4. Fitting a ridge regression model using your ridgereg() function to the training dataset.</h3>
+<p>To use our own method, the ridgereg() function, … <a href="https://topepo.github.io/caret/using-your-own-model-in-train.html" class="uri">https://topepo.github.io/caret/using-your-own-model-in-train.html</a></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">rr &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;Regression&quot;</span>,</a>
+<a class="sourceLine" id="cb6-2" title="2">              <span class="dt">library =</span> <span class="st">&quot;awesomebonus&quot;</span>,</a>
+<a class="sourceLine" id="cb6-3" title="3">              <span class="dt">loop =</span> <span class="ot">NULL</span>)</a>
+<a class="sourceLine" id="cb6-4" title="4"></a>
+<a class="sourceLine" id="cb6-5" title="5">prm &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">parameter =</span> <span class="st">&quot;lambda&quot;</span>,</a>
+<a class="sourceLine" id="cb6-6" title="6">                  <span class="dt">class =</span> <span class="st">&quot;numeric&quot;</span>,</a>
+<a class="sourceLine" id="cb6-7" title="7">                  <span class="dt">label =</span> <span class="st">&quot;Lambda&quot;</span>)</a>
+<a class="sourceLine" id="cb6-8" title="8"></a>
+<a class="sourceLine" id="cb6-9" title="9">rr<span class="op">$</span>parameters &lt;-<span class="st"> </span>prm</a>
+<a class="sourceLine" id="cb6-10" title="10"></a>
+<a class="sourceLine" id="cb6-11" title="11">rrGrid &lt;-<span class="st"> </span><span class="cf">function</span>(x, y, <span class="dt">len =</span> <span class="ot">NULL</span>, <span class="dt">search =</span> grid) {</a>
+<a class="sourceLine" id="cb6-12" title="12">  <span class="cf">if</span>(search <span class="op">==</span><span class="st"> </span>grid) {</a>
+<a class="sourceLine" id="cb6-13" title="13">    out &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lambda =</span> <span class="kw">c</span>(<span class="fl">0.01</span>, <span class="dv">100</span>))</a>
+<a class="sourceLine" id="cb6-14" title="14">  } <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb6-15" title="15">    <span class="kw">stop</span>(<span class="st">&#39;random search not yet implemented&#39;</span>)</a>
+<a class="sourceLine" id="cb6-16" title="16">  }</a>
+<a class="sourceLine" id="cb6-17" title="17">  <span class="kw">return</span>(out)</a>
+<a class="sourceLine" id="cb6-18" title="18">}</a>
+<a class="sourceLine" id="cb6-19" title="19"></a>
+<a class="sourceLine" id="cb6-20" title="20">rr<span class="op">$</span>grid &lt;-<span class="st"> </span>rrGrid</a>
+<a class="sourceLine" id="cb6-21" title="21"></a>
+<a class="sourceLine" id="cb6-22" title="22"><span class="co"># Probably needs to use formula??</span></a>
+<a class="sourceLine" id="cb6-23" title="23">rrFit &lt;-<span class="st"> </span><span class="cf">function</span>(x, y, wts, param, lev, last, weights, classProbs, ...) {</a>
+<a class="sourceLine" id="cb6-24" title="24">  <span class="kw">library</span>(awesomebonus)</a>
+<a class="sourceLine" id="cb6-25" title="25">  <span class="kw">print</span>(<span class="kw">head</span>(data))</a>
+<a class="sourceLine" id="cb6-26" title="26">  <span class="kw">ridgereg</span>(y <span class="op">~</span><span class="st"> </span>x, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(data), <span class="dt">lambda =</span> param<span class="op">$</span>lambda, ...)</a>
+<a class="sourceLine" id="cb6-27" title="27">}</a>
+<a class="sourceLine" id="cb6-28" title="28"></a>
+<a class="sourceLine" id="cb6-29" title="29">rr<span class="op">$</span>fit &lt;-<span class="st"> </span>rrFit</a>
+<a class="sourceLine" id="cb6-30" title="30"></a>
+<a class="sourceLine" id="cb6-31" title="31">rr<span class="op">$</span>levels &lt;-<span class="st"> </span><span class="cf">function</span>(x) x<span class="op">@</span>levels</a>
+<a class="sourceLine" id="cb6-32" title="32"></a>
+<a class="sourceLine" id="cb6-33" title="33">rrPred &lt;-<span class="st"> </span><span class="cf">function</span>(modelFit, newdata, <span class="dt">preProc =</span> <span class="ot">NULL</span>, <span class="dt">submodels =</span> <span class="ot">NULL</span>) {</a>
+<a class="sourceLine" id="cb6-34" title="34">  <span class="kw">predict</span>(modelFit, newdata)</a>
+<a class="sourceLine" id="cb6-35" title="35">}</a>
+<a class="sourceLine" id="cb6-36" title="36"></a>
+<a class="sourceLine" id="cb6-37" title="37">rr<span class="op">$</span>predict &lt;-<span class="st"> </span>rrPred</a>
+<a class="sourceLine" id="cb6-38" title="38"></a>
+<a class="sourceLine" id="cb6-39" title="39">rrProb &lt;-<span class="st"> </span><span class="cf">function</span>(modelFit, newdata, <span class="dt">preProc =</span> <span class="ot">NULL</span>, <span class="dt">submodels =</span> <span class="ot">NULL</span>) {</a>
+<a class="sourceLine" id="cb6-40" title="40">  <span class="kw">predict</span>(modelFit, newdata, <span class="dt">type =</span> <span class="st">&quot;prob&quot;</span>)</a>
+<a class="sourceLine" id="cb6-41" title="41">}</a>
+<a class="sourceLine" id="cb6-42" title="42"></a>
+<a class="sourceLine" id="cb6-43" title="43">rr<span class="op">$</span>prob &lt;-<span class="st"> </span>rrProb</a>
+<a class="sourceLine" id="cb6-44" title="44"></a>
+<a class="sourceLine" id="cb6-45" title="45">rrSort &lt;-<span class="st"> </span><span class="cf">function</span>(x) x[<span class="kw">order</span>(x<span class="op">$</span>lambda),]</a>
+<a class="sourceLine" id="cb6-46" title="46"></a>
+<a class="sourceLine" id="cb6-47" title="47">rr<span class="op">$</span>sort &lt;-<span class="st"> </span>rrSort</a>
+<a class="sourceLine" id="cb6-48" title="48"></a>
+<a class="sourceLine" id="cb6-49" title="49">fitControl &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;repeatedcv&quot;</span>,</a>
+<a class="sourceLine" id="cb6-50" title="50">                           <span class="dt">number =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb6-51" title="51">                           <span class="dt">repeats =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb6-52" title="52"></a>
+<a class="sourceLine" id="cb6-53" title="53">rGrid &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lambda =</span> <span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.3</span>))</a>
+<a class="sourceLine" id="cb6-54" title="54"></a>
+<a class="sourceLine" id="cb6-55" title="55"><span class="kw">set.seed</span>(<span class="dv">825</span>)</a>
+<a class="sourceLine" id="cb6-56" title="56"><span class="co"># rrTune &lt;- train(medv ~ .,</span></a>
+<a class="sourceLine" id="cb6-57" title="57"><span class="co">#                 data = training,</span></a>
+<a class="sourceLine" id="cb6-58" title="58"><span class="co">#                   method = rr,</span></a>
+<a class="sourceLine" id="cb6-59" title="59"><span class="co">#                   trControl = fitControl,</span></a>
+<a class="sourceLine" id="cb6-60" title="60"><span class="co">#                   tuneGrid = rGrid)</span></a>
+<a class="sourceLine" id="cb6-61" title="61"><span class="co"># </span></a>
+<a class="sourceLine" id="cb6-62" title="62"><span class="co"># linregFit_ridgereg &lt;- train(medv ~ ., </span></a>
+<a class="sourceLine" id="cb6-63" title="63"><span class="co">#                             data = training, </span></a>
+<a class="sourceLine" id="cb6-64" title="64"><span class="co">#                             method = &quot;ridgereg&quot;, </span></a>
+<a class="sourceLine" id="cb6-65" title="65"><span class="co">#                             preProc = c(&quot;center&quot;, &quot;scale&quot;)</span></a>
+<a class="sourceLine" id="cb6-66" title="66"><span class="co">#                             )</span></a>
+<a class="sourceLine" id="cb6-67" title="67"><span class="co"># </span></a>
+<a class="sourceLine" id="cb6-68" title="68"></a>
+<a class="sourceLine" id="cb6-69" title="69"></a>
+<a class="sourceLine" id="cb6-70" title="70"><span class="co"># Setting &quot;formula&quot;, &quot;data&quot; and &quot;lambda&quot; arguments</span></a>
+<a class="sourceLine" id="cb6-71" title="71"><span class="co">#ridge &lt;- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)</span></a></code></pre></div>
+</div>
+<div id="finding-the-best-hyperparameter-value-for-" class="section level3">
+<h3>3.5. Finding the best hyperparameter value for λ</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="co"># fitControl &lt;- trainControl(method = &quot;none&quot;,</span></a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="co">#                            number = 10,</span></a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="co">#                            repeats = 3,</span></a>
+<a class="sourceLine" id="cb7-4" title="4"><span class="co">#                            summaryFunction = defaultSummary,</span></a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="co">#                            search = &quot;random&quot;)</span></a>
+<a class="sourceLine" id="cb7-6" title="6"><span class="co"># </span></a>
+<a class="sourceLine" id="cb7-7" title="7"><span class="co"># set.seed(825)</span></a>
+<a class="sourceLine" id="cb7-8" title="8"><span class="co"># rda_fit &lt;- train(Class ~ ., data = training, </span></a>
+<a class="sourceLine" id="cb7-9" title="9"><span class="co">#                   method = &quot;rda&quot;,</span></a>
+<a class="sourceLine" id="cb7-10" title="10"><span class="co">#                   metric = &quot;ROC&quot;,</span></a>
+<a class="sourceLine" id="cb7-11" title="11"><span class="co">#                   tuneLength = 30,</span></a>
+<a class="sourceLine" id="cb7-12" title="12"><span class="co">#                   trControl = fitControl)</span></a>
+<a class="sourceLine" id="cb7-13" title="13"><span class="co"># rda_fit</span></a></code></pre></div>
+</div>
+</div>
+<div id="references." class="section level2">
+<h2>References.</h2>
+<ul>
+<li>Ridge Regression: <a href="https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/NCSS/Ridge_Regression.pdf" class="uri">https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/NCSS/Ridge_Regression.pdf</a></li>
+<li>Caret package: <a href="https://cran.r-project.org/web/packages/caret/caret.pdf" class="uri">https://cran.r-project.org/web/packages/caret/caret.pdf</a></li>
+<li>Vignettes: <a href="http://r-pkgs.had.co.nz/vignettes.html" class="uri">http://r-pkgs.had.co.nz/vignettes.html</a></li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

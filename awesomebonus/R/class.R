@@ -30,7 +30,7 @@
 ridgereg <- setRefClass ("ridgereg",
   fields = c (
     formula = "formula",
-    data = "ANY",
+    data = "data.frame",
     lambda = "ANY",
     regression_coefficients = "ANY", 
     fitted_values = "ANY",
@@ -44,23 +44,25 @@ ridgereg <- setRefClass ("ridgereg",
                 length(lambda) == 1)
 
       
-      # Extract function call
-      arg_string <- paste(as.list(sys.calls()), collapse='')
-      function_pattern <- "ridgereg\\$new\\(.*?\\)"
-      function_call <- regmatches(arg_string, regexpr(function_pattern, arg_string, perl = TRUE))
-      base::print(function_call)
-      # From function call, extract data argument
-      data_pattern <- "(\\w+)(?=\\))"
-      data_argument <- regmatches(function_call, regexpr(data_pattern, function_call, perl = TRUE))
-      base::print(data_argument)
+      # Extract formula
+      term <- terms.formula(x=formula, data = data, keep.order = TRUE, simplify = TRUE)
+      form <- deparse(term)
+      formula_call <- paste0(form, collapse = "")
+      
       # Save arguments
-      arguments <<- c(formula, data_argument, lambda)
-      base::print(arguments)
+      arguments <<- c(formula_call, lambda)
       
       # 1. Normalizating the covariates in the dataset.
       df <- as.data.frame(na.omit(data)) # removing NA's
-      name_indep <- all.vars(formula)[-1]
+      #name_indep <- all.vars(formula)[-1]
+      name_indep <- labels(term)
       vect <- vector()
+      
+      
+      
+      # if(name_indep == "."){
+      #   name_indep <- labels(term)
+      # }
       
       for(j in 1:length(name_indep)){
         mean_j <- mean(df[[name_indep[j]]])
@@ -100,9 +102,11 @@ ridgereg <- setRefClass ("ridgereg",
       model$Coefficients <- regression_coefficients
       base::print(model)
     },
-    predict = function(){
-      "Returns the predictions."
-      return(fitted_values)
+    predict = function(newdata){
+      "Calculate predictions based on fitted values and new x data."
+      predicted_y <- rowSums(regression_coefficients[[1]] + newdata * regression_coefficients[[-1]])
+      
+      return(predicted_y)
     },
     coef = function(){
       "Returns the coefficients."
