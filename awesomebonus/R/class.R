@@ -44,7 +44,7 @@ ridgereg <- setRefClass ("ridgereg",
     arguments = "ANY"),
   methods = c (
     initialize = function(formula, data, lambda){
-      "Initialize function calculates all values needed from formula, data and lambda."
+      "Initialize function calculates all values needed from formula, data and lambda. Calculate coefficients using least squares."
       ## 0. Check that the class of the formula argument is correct:
       stopifnot(class(formula) == "formula",
                 is.data.frame(data),
@@ -118,6 +118,10 @@ ridgereg <- setRefClass ("ridgereg",
     coef = function(){
       "Returns the coefficients."
       return(regression_coefficients[-1])
+    },
+    intercept = function(){
+      "Returns the intercept."
+      return(regression_coefficients[1])
     }
   )
 )

@@ -30,7 +30,9 @@ It also stores diverse functions implemented using RC object oriented programmin
 \describe{
 \item{\code{coef()}}{Returns the coefficients.}
 
-\item{\code{initialize(formula, data, lambda)}}{Initialize function calculates all values needed from formula, data and lambda.}
+\item{\code{initialize(formula, data, lambda)}}{Initialize function calculates all values needed from formula, data and lambda. Calculate coefficients using least squares.}
+
+\item{\code{intercept()}}{Returns the intercept.}
 
 \item{\code{predict(newdata)}}{Calculate predictions based on fitted values and new x data.}
 
