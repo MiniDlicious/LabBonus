@@ -29,6 +29,7 @@ linregFit <- train(medv ~ .,
 linregFit
 
 ## ------------------------------------------------------------------------
+library(leaps)
 linforFit <- train(medv ~ .,
                    data= training,
                    method = 'leapForward', # to fit linear regression with forward selection

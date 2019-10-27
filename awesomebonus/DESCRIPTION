@@ -7,7 +7,7 @@ Authors@R: as.person(c(
     "Martin Svensson <martin.k.r.svensson@gmail.com> [aut, cre]", 
     "Laura Julià Melis <laaurajulia@gmail.com> [aut]"
   ))
-Description: This package TODO.
+Description: The awesomebonus package contains a class ridgereg, that will do ridge regression.
 License: MIT + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
@@ -22,7 +22,8 @@ Imports:
     caret,
     corrplot,
     mlbench,
-    MASS
+    MASS,
+    rlang
 Suggests: 
     roxygen2,
     testthat,
@@ -30,3 +31,4 @@ Suggests:
     rmarkdown,
     stats,
     leaps
+    

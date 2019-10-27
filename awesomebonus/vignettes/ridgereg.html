@@ -370,17 +370,18 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## Summary of sample sizes: 407, 407, 407, 407, 407, 407, ... 
 ## Resampling results:
 ## 
-##   RMSE     Rsquared   MAE     
-##   4.89356  0.7330074  3.389627
+##   RMSE      Rsquared   MAE     
+##   4.957874  0.7191781  3.444977
 ## 
 ## Tuning parameter &#39;intercept&#39; was held constant at a value of TRUE</code></pre>
 <p>Now, we will fit a linear regression model with forward selection of covariates on the <em>training</em> dataset.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">linforFit &lt;-<span class="st"> </span><span class="kw">train</span>(medv <span class="op">~</span><span class="st"> </span>.,</a>
-<a class="sourceLine" id="cb4-2" title="2">                   <span class="dt">data=</span> training,</a>
-<a class="sourceLine" id="cb4-3" title="3">                   <span class="dt">method =</span> <span class="st">&#39;leapForward&#39;</span>, <span class="co"># to fit linear regression with forward selection</span></a>
-<a class="sourceLine" id="cb4-4" title="4">                   <span class="dt">preProc =</span> <span class="kw">c</span>(<span class="st">&quot;center&quot;</span>, <span class="st">&quot;scale&quot;</span>) <span class="co"># center and scale the predictors</span></a>
-<a class="sourceLine" id="cb4-5" title="5">                   )</a>
-<a class="sourceLine" id="cb4-6" title="6">linforFit</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">library</span>(leaps)</a>
+<a class="sourceLine" id="cb4-2" title="2">linforFit &lt;-<span class="st"> </span><span class="kw">train</span>(medv <span class="op">~</span><span class="st"> </span>.,</a>
+<a class="sourceLine" id="cb4-3" title="3">                   <span class="dt">data=</span> training,</a>
+<a class="sourceLine" id="cb4-4" title="4">                   <span class="dt">method =</span> <span class="st">&#39;leapForward&#39;</span>, <span class="co"># to fit linear regression with forward selection</span></a>
+<a class="sourceLine" id="cb4-5" title="5">                   <span class="dt">preProc =</span> <span class="kw">c</span>(<span class="st">&quot;center&quot;</span>, <span class="st">&quot;scale&quot;</span>) <span class="co"># center and scale the predictors</span></a>
+<a class="sourceLine" id="cb4-6" title="6">                   )</a>
+<a class="sourceLine" id="cb4-7" title="7">linforFit</a></code></pre></div>
 <pre><code>## Linear Regression with Forward Selection 
 ## 
 ## 407 samples
@@ -392,9 +393,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## Resampling results across tuning parameters:
 ## 
 ##   nvmax  RMSE      Rsquared   MAE     
-##   2      5.514391  0.6441029  3.935781
-##   3      5.162141  0.6859615  3.666604
-##   4      5.065381  0.6979106  3.540025
+##   2      5.692605  0.6348090  4.088375
+##   3      5.352070  0.6774671  3.789958
+##   4      5.312295  0.6802586  3.725992
 ## 
 ## RMSE was used to select the optimal model using the smallest value.
 ## The final value used for the model was nvmax = 4.</code></pre>
@@ -440,97 +441,97 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <tbody>
 <tr class="odd">
 <td align="right">1e+01</td>
-<td align="right">1038.08931</td>
-<td align="right">0.0114047</td>
-<td align="right">814.43609</td>
-<td align="right">200.9870635</td>
-<td align="right">0.0123869</td>
-<td align="right">174.2767236</td>
+<td align="right">1083.50165</td>
+<td align="right">0.0146127</td>
+<td align="right">858.80428</td>
+<td align="right">177.4334146</td>
+<td align="right">0.0186454</td>
+<td align="right">160.9910563</td>
 </tr>
 <tr class="even">
 <td align="right">1e+02</td>
-<td align="right">809.04761</td>
-<td align="right">0.0102291</td>
-<td align="right">610.08366</td>
-<td align="right">153.3722582</td>
-<td align="right">0.0122425</td>
-<td align="right">109.9113519</td>
+<td align="right">798.90747</td>
+<td align="right">0.0130256</td>
+<td align="right">615.04383</td>
+<td align="right">128.8910223</td>
+<td align="right">0.0206179</td>
+<td align="right">102.4164185</td>
 </tr>
 <tr class="odd">
 <td align="right">1e+03</td>
-<td align="right">386.25067</td>
-<td align="right">0.0107083</td>
-<td align="right">312.30409</td>
-<td align="right">65.8395828</td>
-<td align="right">0.0122150</td>
-<td align="right">52.9469895</td>
+<td align="right">381.17481</td>
+<td align="right">0.0111694</td>
+<td align="right">308.65645</td>
+<td align="right">57.5069773</td>
+<td align="right">0.0186704</td>
+<td align="right">50.7669138</td>
 </tr>
 <tr class="even">
 <td align="right">1e+04</td>
-<td align="right">97.18060</td>
-<td align="right">0.0110935</td>
-<td align="right">83.26133</td>
-<td align="right">11.7159319</td>
-<td align="right">0.0134977</td>
-<td align="right">11.6271088</td>
+<td align="right">99.28839</td>
+<td align="right">0.0106833</td>
+<td align="right">84.57321</td>
+<td align="right">10.9777013</td>
+<td align="right">0.0154214</td>
+<td align="right">11.2954974</td>
 </tr>
 <tr class="odd">
 <td align="right">1e+05</td>
-<td align="right">29.61143</td>
-<td align="right">0.0111750</td>
-<td align="right">26.91922</td>
-<td align="right">1.0262709</td>
-<td align="right">0.0140359</td>
-<td align="right">0.6949085</td>
+<td align="right">29.90170</td>
+<td align="right">0.0107183</td>
+<td align="right">27.15635</td>
+<td align="right">1.0947087</td>
+<td align="right">0.0150740</td>
+<td align="right">0.7948923</td>
 </tr>
 <tr class="even">
 <td align="right">1e+06</td>
-<td align="right">24.74902</td>
-<td align="right">0.0111841</td>
-<td align="right">22.99978</td>
-<td align="right">0.9190043</td>
-<td align="right">0.0140974</td>
-<td align="right">0.6759177</td>
+<td align="right">24.68748</td>
+<td align="right">0.0107240</td>
+<td align="right">22.92311</td>
+<td align="right">0.9655891</td>
+<td align="right">0.0150435</td>
+<td align="right">0.6636108</td>
 </tr>
 <tr class="odd">
 <td align="right">1e+07</td>
-<td align="right">24.39184</td>
-<td align="right">0.0111850</td>
-<td align="right">22.62321</td>
-<td align="right">0.9188604</td>
-<td align="right">0.0141036</td>
-<td align="right">0.6736182</td>
+<td align="right">24.29669</td>
+<td align="right">0.0107246</td>
+<td align="right">22.50932</td>
+<td align="right">0.9696399</td>
+<td align="right">0.0150405</td>
+<td align="right">0.6607863</td>
 </tr>
 <tr class="even">
 <td align="right">1e+08</td>
-<td align="right">24.35774</td>
-<td align="right">0.0111851</td>
-<td align="right">22.58545</td>
-<td align="right">0.9187116</td>
-<td align="right">0.0141043</td>
-<td align="right">0.6734606</td>
+<td align="right">24.25928</td>
+<td align="right">0.0107247</td>
+<td align="right">22.46782</td>
+<td align="right">0.9700278</td>
+<td align="right">0.0150402</td>
+<td align="right">0.6606109</td>
 </tr>
 <tr class="odd">
 <td align="right">1e+09</td>
-<td align="right">24.35435</td>
-<td align="right">0.0111851</td>
-<td align="right">22.58167</td>
-<td align="right">0.9186953</td>
-<td align="right">0.0141043</td>
-<td align="right">0.6734456</td>
+<td align="right">24.25556</td>
+<td align="right">0.0107247</td>
+<td align="right">22.46367</td>
+<td align="right">0.9700663</td>
+<td align="right">0.0150401</td>
+<td align="right">0.6605945</td>
 </tr>
 <tr class="even">
 <td align="right">1e+10</td>
-<td align="right">24.35401</td>
-<td align="right">0.0111852</td>
-<td align="right">22.58130</td>
-<td align="right">0.9186936</td>
-<td align="right">0.0141043</td>
-<td align="right">0.6734441</td>
+<td align="right">24.25519</td>
+<td align="right">0.0107247</td>
+<td align="right">22.46326</td>
+<td align="right">0.9700701</td>
+<td align="right">0.0150401</td>
+<td align="right">0.6605929</td>
 </tr>
 </tbody>
 </table>
-<p>Looking at RMSE vs. lambda in a plot. <img src="data:image/png;base64,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" /><!-- --></p>
+<p>Looking at RMSE vs. lambda in a plot. <img src="data:image/png;base64,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" /><!-- --></p>
 <p>We can conclude that lambda <span class="math inline">\(1*10^5\)</span> or <span class="math inline">\(1*10^6\)</span> gives the best RMSE and with the lowest lambda. Using <span class="math inline">\(lambda = 1*10^6\)</span> for the test dataset.</p>
 </div>
 <div id="evaluate-performance-of-all-three-models-on-test-dataset." class="section level3">
@@ -538,19 +539,19 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>As our outcome is numeric, we will use the function <code>postResample</code> in order to estimate the root mean squared error (RMSE), the coefficient of determination (<span class="math inline">\(R^2\)</span>), and the mean absolute error (MAE).</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">pred &lt;-<span class="st"> </span><span class="kw">predict</span>(linregFit, testing)</a>
 <a class="sourceLine" id="cb7-2" title="2"><span class="kw">postResample</span>(<span class="dt">pred =</span> pred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
-<pre><code>##      RMSE  Rsquared       MAE 
-## 5.9393105 0.5960184 3.6166893</code></pre>
+<pre><code>##     RMSE Rsquared      MAE 
+## 5.271277 0.666942 3.593176</code></pre>
 <p>And the same for the forward looking model.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">forpred &lt;-<span class="st"> </span><span class="kw">predict</span>(linforFit, testing)</a>
 <a class="sourceLine" id="cb9-2" title="2"><span class="kw">postResample</span>(<span class="dt">pred =</span> forpred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
-<pre><code>##      RMSE  Rsquared       MAE 
-## 6.3035744 0.5535329 3.7720682</code></pre>
+<pre><code>##     RMSE Rsquared      MAE 
+## 5.630611 0.621120 3.785919</code></pre>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">my_ridge &lt;-<span class="st"> </span>ridgereg<span class="op">$</span><span class="kw">new</span>(medv<span class="op">~</span>., <span class="dt">data=</span>training, <span class="dt">lambda =</span> <span class="dv">10</span><span class="op">**</span><span class="dv">6</span>)</a>
 <a class="sourceLine" id="cb11-2" title="2">X_test &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(testing, <span class="op">-</span>medv)</a>
 <a class="sourceLine" id="cb11-3" title="3">ridge_pred &lt;-<span class="st"> </span>my_ridge<span class="op">$</span><span class="kw">predict</span>(X_test)</a>
 <a class="sourceLine" id="cb11-4" title="4"><span class="kw">postResample</span>(<span class="dt">pred =</span> ridge_pred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
 <pre><code>##         RMSE     Rsquared          MAE 
-## 24.673546153  0.008736944 22.869289270</code></pre>
+## 2.510761e+01 6.346949e-04 2.336660e+01</code></pre>
 <p>We can see that in this example both the linear models have better performance for all three evaluation variables (RMSE, <span class="math inline">\(R^2\)</span> and MAE). Conclusion is that this dataset was well-adapted for the linear models.</p>
 </div>
 </div>

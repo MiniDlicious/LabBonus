@@ -1,11 +1,11 @@
 #' awesomebonus: A Ridge regression package.
 #'
-#' The awesomelab4 package contains an object with class \code{linreg}, created with the RC object oriented system.
-#' This object is helpful to handle linear regression models as it provides multiple methods such as \code{resid()} and
-#' \code{coef()} to obtain the vector of residuals and the regressions coefficients of a given regression model, respectively.
+#' The awesomebonus package contains an object with class \code{ridgereg}, created with the RC object oriented system.
+#' This object is helpful to handle ridge regression models as it provides multiple methods such as \code{predict()} and
+#' \code{coef()} to predict using the fitted model and the regressions coefficients of a given regression model, respectively.
 #' 
 #' @section Class object:
-#' \code{linreg()} calculates various statistics related to the linear regression model and contains multiple methods to obtain the regression coefficients or the predicted values, among others.
+#' \code{ridgereg()} calculates various statistics related to the ridge regression model and contains multiple methods to obtain the regression coefficients or the predicted values, among others.
 #' 
 #' @author
 #' Martin Svensson and Laura Julia Melis.
