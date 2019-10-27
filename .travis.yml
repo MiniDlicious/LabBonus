@@ -2,3 +2,6 @@ language: r
 cache: packages
 before_install:
   - cd awesomebonus
+env:
+  global:
+    - R_BUILD_ARGS="--no-build-vignettes"

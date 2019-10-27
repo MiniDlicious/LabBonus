@@ -21,6 +21,8 @@ It also stores diverse functions implemented using RC object oriented programmin
 \item{\code{fitted_values}}{the fitted values.}
 
 \item{\code{lambda}}{a integer.}
+
+\item{\code{arguments}}{a vector containing the function call.}
 }}
 
 \section{Methods}{
@@ -37,7 +39,7 @@ It also stores diverse functions implemented using RC object oriented programmin
 
 \examples{
 data("flights")
-example <- ridgereg$new(formula = air_time~dep_delay + arr_delay, data = flights, lambda = 1)
+example <- ridgereg$new(formula = air_time~dep_delay + arr_delay, data = flights, lambda = 10**6)
 
 }
 \references{

@@ -6,9 +6,10 @@ library(mlbench)
 ## ------------------------------------------------------------------------
 data("BostonHousing")
 
-set.seed(107)
+dataSet <- dplyr::select(BostonHousing, -c(chas))
+
 inTrain <- createDataPartition(
-  y = BostonHousing$medv,
+  y = dataSet$medv,
   ## the outcome data are needed
   p = .8,
   ## The percentage of data in the
@@ -16,106 +17,69 @@ inTrain <- createDataPartition(
   list = FALSE
 )
 
-training <- BostonHousing[ inTrain,] 
-testing  <- BostonHousing[-inTrain,]
+training <- dataSet[ inTrain,] 
+testing  <- dataSet[-inTrain,]
 
 ## ------------------------------------------------------------------------
 linregFit <- train(medv ~ .,
                    data= training,
-                   method = 'leapForward', # to fit linear regression with forward selection
+                   method = 'lm', # to fit linear regression with forward selection
                    preProc = c("center", "scale") # center and scale the predictors
                    )
 linregFit
+
+## ------------------------------------------------------------------------
+linforFit <- train(medv ~ .,
+                   data= training,
+                   method = 'leapForward', # to fit linear regression with forward selection
+                   preProc = c("center", "scale") # center and scale the predictors
+                   )
+linforFit
+
+## ------------------------------------------------------------------------
+ridge_model <- ridgereg_model()
+
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 5)
+
+rGrid <- expand.grid(lambda = 1*10**(c(1:10)))
+
+set.seed(825)
+rrTune <- train(form = medv ~ .,
+                data = training,
+                method = ridge_model,
+                trControl = fitControl, 
+                tuneGrid = rGrid)
+
+
+
+## ----echo = FALSE--------------------------------------------------------
+library(knitr)
+kable(rrTune$results, caption = "Evaluation of the Hyper parameters")
+
+
+## ----echo = FALSE--------------------------------------------------------
+
+library(ggplot2)
+ggplot(rrTune$results) + 
+  geom_point(aes(x= log10(lambda), y = RMSE, colour="#2c3e50", size=2)) + 
+  geom_line(aes(x= log10(lambda), y = RMSE, colour="#2980b9", size=1)) + 
+  theme(legend.position = "none") + 
+  scale_x_continuous(breaks=seq(0,24,2))
+
 
 ## ------------------------------------------------------------------------
 pred <- predict(linregFit, testing)
 postResample(pred = pred, obs = testing$medv)
 
 ## ------------------------------------------------------------------------
-rr <- list(type = "Regression",
-              library = "awesomebonus",
-              loop = NULL)
-
-prm <- data.frame(parameter = "lambda",
-                  class = "numeric",
-                  label = "Lambda")
-
-rr$parameters <- prm
-
-rrGrid <- function(x, y, len = NULL, search = grid) {
-  if(search == grid) {
-    out <- expand.grid(lambda = c(0.01, 100))
-  } else {
-    stop('random search not yet implemented')
-  }
-  return(out)
-}
-
-rr$grid <- rrGrid
-
-# Probably needs to use formula??
-rrFit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
-  library(awesomebonus)
-  print(head(data))
-  ridgereg(y ~ x, data = as.data.frame(data), lambda = param$lambda, ...)
-}
-
-rr$fit <- rrFit
-
-rr$levels <- function(x) x@levels
-
-rrPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-  predict(modelFit, newdata)
-}
-
-rr$predict <- rrPred
-
-rrProb <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-  predict(modelFit, newdata, type = "prob")
-}
-
-rr$prob <- rrProb
-
-rrSort <- function(x) x[order(x$lambda),]
-
-rr$sort <- rrSort
-
-fitControl <- trainControl(method = "repeatedcv",
-                           number = 1,
-                           repeats = 1)
-
-rGrid <- expand.grid(lambda = c(0.1, 0.3))
-
-set.seed(825)
-# rrTune <- train(medv ~ .,
-#                 data = training,
-#                   method = rr,
-#                   trControl = fitControl,
-#                   tuneGrid = rGrid)
-# 
-# linregFit_ridgereg <- train(medv ~ ., 
-#                             data = training, 
-#                             method = "ridgereg", 
-#                             preProc = c("center", "scale")
-#                             )
-# 
-
-
-# Setting "formula", "data" and "lambda" arguments
-#ridge <- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)
+forpred <- predict(linforFit, testing)
+postResample(pred = forpred, obs = testing$medv)
 
 ## ------------------------------------------------------------------------
-# fitControl <- trainControl(method = "none",
-#                            number = 10,
-#                            repeats = 3,
-#                            summaryFunction = defaultSummary,
-#                            search = "random")
-# 
-# set.seed(825)
-# rda_fit <- train(Class ~ ., data = training, 
-#                   method = "rda",
-#                   metric = "ROC",
-#                   tuneLength = 30,
-#                   trControl = fitControl)
-# rda_fit
+my_ridge <- ridgereg$new(medv~., data=training, lambda = 10**6)
+X_test <- dplyr::select(testing, -medv)
+ridge_pred <- my_ridge$predict(X_test)
+postResample(pred = ridge_pred, obs = testing$medv)
 

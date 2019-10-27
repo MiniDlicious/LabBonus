@@ -42,9 +42,10 @@ First we will divide the dataset into a test and training dataset:
 ```{r}
 data("BostonHousing")
 
-set.seed(107)
+dataSet <- dplyr::select(BostonHousing, -c(chas))
+
 inTrain <- createDataPartition(
-  y = BostonHousing$medv,
+  y = dataSet$medv,
   ## the outcome data are needed
   p = .8,
   ## The percentage of data in the
@@ -52,29 +53,33 @@ inTrain <- createDataPartition(
   list = FALSE
 )
 
-training <- BostonHousing[ inTrain,] 
-testing  <- BostonHousing[-inTrain,]
+training <- dataSet[ inTrain,] 
+testing  <- dataSet[-inTrain,]
 ```
 
 ### 3.2. Fitting a linear regression model.
-Now, we will fit a linear regression model with forward selection of covariates on the *training* dataset.
+First we sill fit a regular linear regression model using lm from build in caret package.
 ```{r}
 linregFit <- train(medv ~ .,
                    data= training,
-                   method = 'leapForward', # to fit linear regression with forward selection
+                   method = 'lm', # to fit linear regression with forward selection
                    preProc = c("center", "scale") # center and scale the predictors
                    )
 linregFit
 ```
 
-
-### 3.3. Evaluating the performance of this model on the training dataset.
-As our outcome is numeric, we will use the function `postResample` in order to estimate the root mean squared error (RMSE), the coefficient of determination ($R^2$), and the mean absolute error (MAE).
+Now, we will fit a linear regression model with forward selection of covariates on the *training* dataset.
 ```{r}
-pred <- predict(linregFit, testing)
-postResample(pred = pred, obs = testing$medv)
+linforFit <- train(medv ~ .,
+                   data= training,
+                   method = 'leapForward', # to fit linear regression with forward selection
+                   preProc = c("center", "scale") # center and scale the predictors
+                   )
+linforFit
 ```
 
+
+### 3.3. Evaluating the performance of this model on the training dataset.
 The RMSE indicates how close the observed data points are to the model’s predicted values, it can be interpreted as the standard deviation of the unexplained variance, and has the same units as the response variable. A low RMSE indicates a good fit and if we observe that our dependent variable has a range of 44.4 (values between 5.6 and 50) and a standard deviation of 8.74 then we can conclude that the RMSE is low and it indicates a good fit.
 
 The Rsquared is a goodness-of-fit measure ans also indicates how close the data are to the fitted regression line. The closer to 1 the $R^2$ value is, the better the model fits the data because it means that the model explains a lot of the variability of the response data around its mean. In our case, the model explains 68.8% of the variability so, again, we can say that this is a good model.
@@ -84,95 +89,67 @@ The Rsquared is a goodness-of-fit measure ans also indicates how close the data 
 
 To use our own method, the ridgereg() function, ... https://topepo.github.io/caret/using-your-own-model-in-train.html
 ```{r}
-rr <- list(type = "Regression",
-              library = "awesomebonus",
-              loop = NULL)
-
-prm <- data.frame(parameter = "lambda",
-                  class = "numeric",
-                  label = "Lambda")
-
-rr$parameters <- prm
-
-rrGrid <- function(x, y, len = NULL, search = grid) {
-  if(search == grid) {
-    out <- expand.grid(lambda = c(0.01, 100))
-  } else {
-    stop('random search not yet implemented')
-  }
-  return(out)
-}
-
-rr$grid <- rrGrid
-
-# Probably needs to use formula??
-rrFit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
-  library(awesomebonus)
-  print(head(data))
-  ridgereg(y ~ x, data = as.data.frame(data), lambda = param$lambda, ...)
-}
-
-rr$fit <- rrFit
-
-rr$levels <- function(x) x@levels
-
-rrPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-  predict(modelFit, newdata)
-}
-
-rr$predict <- rrPred
-
-rrProb <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-  predict(modelFit, newdata, type = "prob")
-}
-
-rr$prob <- rrProb
-
-rrSort <- function(x) x[order(x$lambda),]
-
-rr$sort <- rrSort
+ridge_model <- ridgereg_model()
 
 fitControl <- trainControl(method = "repeatedcv",
-                           number = 1,
-                           repeats = 1)
+                           number = 10,
+                           repeats = 5)
 
-rGrid <- expand.grid(lambda = c(0.1, 0.3))
+rGrid <- expand.grid(lambda = 1*10**(c(1:10)))
 
 set.seed(825)
-# rrTune <- train(medv ~ .,
-#                 data = training,
-#                   method = rr,
-#                   trControl = fitControl,
-#                   tuneGrid = rGrid)
-# 
-# linregFit_ridgereg <- train(medv ~ ., 
-#                             data = training, 
-#                             method = "ridgereg", 
-#                             preProc = c("center", "scale")
-#                             )
-# 
+rrTune <- train(form = medv ~ .,
+                data = training,
+                method = ridge_model,
+                trControl = fitControl, 
+                tuneGrid = rGrid)
 
 
-# Setting "formula", "data" and "lambda" arguments
-#ridge <- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)
 ```
+
 
 ### 3.5. Finding the best hyperparameter value for λ 
-```{r}
-# fitControl <- trainControl(method = "none",
-#                            number = 10,
-#                            repeats = 3,
-#                            summaryFunction = defaultSummary,
-#                            search = "random")
-# 
-# set.seed(825)
-# rda_fit <- train(Class ~ ., data = training, 
-#                   method = "rda",
-#                   metric = "ROC",
-#                   tuneLength = 30,
-#                   trControl = fitControl)
-# rda_fit
+```{r echo = FALSE}
+library(knitr)
+kable(rrTune$results, caption = "Evaluation of the Hyper parameters")
+
 ```
+
+Looking at RMSE vs. lambda in a plot.
+```{r echo = FALSE}
+
+library(ggplot2)
+ggplot(rrTune$results) + 
+  geom_point(aes(x= log10(lambda), y = RMSE, colour="#2c3e50", size=2)) + 
+  geom_line(aes(x= log10(lambda), y = RMSE, colour="#2980b9", size=1)) + 
+  theme(legend.position = "none") + 
+  scale_x_continuous(breaks=seq(0,24,2))
+
+```
+
+We can conclude that lambda $1*10^5$ or $1*10^6$ gives the best RMSE and with the lowest lambda. Using $lambda = 1*10^6$ for the test dataset.
+
+### 3.6. Evaluate performance of all three models on test dataset. 
+As our outcome is numeric, we will use the function `postResample` in order to estimate the root mean squared error (RMSE), the coefficient of determination ($R^2$), and the mean absolute error (MAE).
+```{r}
+pred <- predict(linregFit, testing)
+postResample(pred = pred, obs = testing$medv)
+```
+
+And the same for the forward looking model.
+```{r}
+forpred <- predict(linforFit, testing)
+postResample(pred = forpred, obs = testing$medv)
+```
+
+```{r}
+my_ridge <- ridgereg$new(medv~., data=training, lambda = 10**6)
+X_test <- dplyr::select(testing, -medv)
+ridge_pred <- my_ridge$predict(X_test)
+postResample(pred = ridge_pred, obs = testing$medv)
+```
+
+We can see that in this example both the linear models have better performance for all three evaluation variables (RMSE, $R^2$ and MAE). Conclusion is that this dataset was well-adapted for the linear models. 
 
 
 ## References.

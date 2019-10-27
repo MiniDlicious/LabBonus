@@ -22,55 +22,57 @@ testing  <- dataSet[-inTrain,]
 
 
 
-rr <- list(type = "Regression",
-           library = "awesomebonus",
-           loop = NULL)
+# rr <- list(type = "Regression",
+#            library = "awesomebonus",
+#            loop = NULL)
+# 
+# prm <- data.frame(parameter = "lambda",
+#                   class = "numeric",
+#                   label = "Lambda")
+# 
+# rr$parameters <- prm
+# 
+# rrGrid <- function(x, y, len = NULL, search = "grid") {
+#   if(search == "grid") {
+#     out <- expand.grid(lambda = c(1, 100))
+#   } else {
+#     stop('random search not yet implemented')
+#   }
+#   return(out)
+# }
+# 
+# rr$grid <- rrGrid
+# 
+# 
+# rrFit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+#   library(awesomebonus)
+#   dat <- if(is.data.frame(x)) x else as.data.frame(x)
+#   dat$.outcome <- y
+#   ridgereg(.outcome ~ ., data = dat, lambda = param$lambda, ...)
+# }
+# 
+# rr$fit <- rrFit
+# 
+# rr$levels <- function(x) x@levels
+# 
+# rrPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
+#   modelFit$predict(newdata)
+# }
+# 
+# rr$predict <- rrPred
+# 
+# rrProb <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
+#   modelFit$predict(newdata, type = "prob")
+#   warning("Function not applicable for ridgereg!")
+# }
+# 
+# rr$prob <- rrProb
+# 
+# rrSort <- function(x) x[order(x$lambda),]
+# 
+# rr$sort <- rrSort
 
-prm <- data.frame(parameter = "lambda",
-                  class = "numeric",
-                  label = "Lambda")
-
-rr$parameters <- prm
-
-rrGrid <- function(x, y, len = NULL, search = "grid") {
-  if(search == "grid") {
-    out <- expand.grid(lambda = c(1, 100))
-  } else {
-    stop('random search not yet implemented')
-  }
-  return(out)
-}
-
-rr$grid <- rrGrid
-
-
-rrFit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
-  library(awesomebonus)
-  dat <- if(is.data.frame(x)) x else as.data.frame(x)
-  dat$.outcome <- y
-  ridgereg(.outcome ~ ., data = dat, lambda = param$lambda, ...)
-}
-
-rr$fit <- rrFit
-
-rr$levels <- function(x) x@levels
-
-rrPred <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-  #predict(modelFit, newdata)
-  rowSums(modelFit$regression_coefficients[1] + newdata * modelFit$regression_coefficients[-1])
-}
-
-rr$predict <- rrPred
-
-rrProb <- function(modelFit, newdata, preProc = NULL, submodels = NULL) {
-  predict(modelFit, newdata, type = "prob")
-}
-
-rr$prob <- rrProb
-
-rrSort <- function(x) x[order(x$lambda),]
-
-rr$sort <- rrSort
+rr <- ridgereg_model()
 
 fitControl <- trainControl(method = "repeatedcv",
                            number = 10,

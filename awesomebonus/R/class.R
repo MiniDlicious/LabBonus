@@ -9,10 +9,11 @@
 #' @field regression_coefficients the regression coefficients of the model calculated using the QR decomposition.
 #' @field fitted_values the fitted values.
 #' @field lambda a integer.
+#' @field arguments a vector containing the function call.
 #' 
 #' @examples
 #' data("flights")
-#' example <- ridgereg$new(formula = air_time~dep_delay + arr_delay, data = flights, lambda = 1)
+#' example <- ridgereg$new(formula = air_time~dep_delay + arr_delay, data = flights, lambda = 10**6)
 #' 
 #' @references Reference Classes: \url{http://adv-r.had.co.nz/R5.html}
 #' 

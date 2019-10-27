@@ -53,30 +53,30 @@ corrplot.mixed(cor(trainSet), order="hclust", tl.col="black")
 
 ## ------------------------------------------------------------------------
 # Make predictions and evaluate
+ridge_model <- ridgereg_model()
 
-# Function that returns Root Mean Squared Error
-rmse <- function(error)
-{
-    sqrt(mean(error^2))
-}
- 
-# Function that returns Mean Absolute Error
-mae <- function(error)
-{
-    mean(abs(error))
-}
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 1)
 
-predictions <- ridgereg$new(formula = dep_delay~temp + humid + wind_speed + visib, data = trainSet, lambda = 1000)
+rGrid <- expand.grid(lambda = 1*10**(c(1:10)))
 
-print(predictions$regression_coefficients)
-print(rmse(predictions$fitted_values - trainSet$dep_delay))
+set.seed(825)
+rrTune <- train(form = dep_delay ~ .,
+                data = trainSet,
+                method = ridge_model,
+                trControl = fitControl, 
+                tuneGrid = rGrid)
 
+
+## ----echo = FALSE--------------------------------------------------------
+library(knitr)
+kable(rrTune$results, caption = "Evaluation of the Hyper parameters")
 
 
 ## ------------------------------------------------------------------------
-# Plot
-library(ggplot2)
-ggplot(trainSet) +
-  geom_point(aes(y = predictions$fitted_values, x = trainSet$dep_delay), colour = 'red', size = 3)
-
+my_ridge <- ridgereg$new(dep_delay~., data=trainSet, lambda = 10**9)
+X_test <- dplyr::select(testSet, -dep_delay)
+ridge_pred <- my_ridge$predict(X_test)
+postResample(pred = ridge_pred, obs = testSet$dep_delay)
 

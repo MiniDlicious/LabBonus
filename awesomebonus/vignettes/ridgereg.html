@@ -337,146 +337,221 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>First we will divide the dataset into a test and training dataset:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">data</span>(<span class="st">&quot;BostonHousing&quot;</span>)</a>
 <a class="sourceLine" id="cb1-2" title="2"></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="kw">set.seed</span>(<span class="dv">107</span>)</a>
-<a class="sourceLine" id="cb1-4" title="4">inTrain &lt;-<span class="st"> </span><span class="kw">createDataPartition</span>(</a>
-<a class="sourceLine" id="cb1-5" title="5">  <span class="dt">y =</span> BostonHousing<span class="op">$</span>medv,</a>
-<a class="sourceLine" id="cb1-6" title="6">  <span class="co">## the outcome data are needed</span></a>
-<a class="sourceLine" id="cb1-7" title="7">  <span class="dt">p =</span> <span class="fl">.8</span>,</a>
-<a class="sourceLine" id="cb1-8" title="8">  <span class="co">## The percentage of data in the</span></a>
-<a class="sourceLine" id="cb1-9" title="9">  <span class="co">## training set</span></a>
-<a class="sourceLine" id="cb1-10" title="10">  <span class="dt">list =</span> <span class="ot">FALSE</span></a>
-<a class="sourceLine" id="cb1-11" title="11">)</a>
-<a class="sourceLine" id="cb1-12" title="12"></a>
-<a class="sourceLine" id="cb1-13" title="13">training &lt;-<span class="st"> </span>BostonHousing[ inTrain,] </a>
-<a class="sourceLine" id="cb1-14" title="14">testing  &lt;-<span class="st"> </span>BostonHousing[<span class="op">-</span>inTrain,]</a></code></pre></div>
+<a class="sourceLine" id="cb1-3" title="3">dataSet &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(BostonHousing, <span class="op">-</span><span class="kw">c</span>(chas))</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">inTrain &lt;-<span class="st"> </span><span class="kw">createDataPartition</span>(</a>
+<a class="sourceLine" id="cb1-6" title="6">  <span class="dt">y =</span> dataSet<span class="op">$</span>medv,</a>
+<a class="sourceLine" id="cb1-7" title="7">  <span class="co">## the outcome data are needed</span></a>
+<a class="sourceLine" id="cb1-8" title="8">  <span class="dt">p =</span> <span class="fl">.8</span>,</a>
+<a class="sourceLine" id="cb1-9" title="9">  <span class="co">## The percentage of data in the</span></a>
+<a class="sourceLine" id="cb1-10" title="10">  <span class="co">## training set</span></a>
+<a class="sourceLine" id="cb1-11" title="11">  <span class="dt">list =</span> <span class="ot">FALSE</span></a>
+<a class="sourceLine" id="cb1-12" title="12">)</a>
+<a class="sourceLine" id="cb1-13" title="13"></a>
+<a class="sourceLine" id="cb1-14" title="14">training &lt;-<span class="st"> </span>dataSet[ inTrain,] </a>
+<a class="sourceLine" id="cb1-15" title="15">testing  &lt;-<span class="st"> </span>dataSet[<span class="op">-</span>inTrain,]</a></code></pre></div>
 </div>
 <div id="fitting-a-linear-regression-model." class="section level3">
 <h3>3.2. Fitting a linear regression model.</h3>
-<p>Now, we will fit a linear regression model with forward selection of covariates on the <em>training</em> dataset.</p>
+<p>First we sill fit a regular linear regression model using lm from build in caret package.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">linregFit &lt;-<span class="st"> </span><span class="kw">train</span>(medv <span class="op">~</span><span class="st"> </span>.,</a>
 <a class="sourceLine" id="cb2-2" title="2">                   <span class="dt">data=</span> training,</a>
-<a class="sourceLine" id="cb2-3" title="3">                   <span class="dt">method =</span> <span class="st">&#39;leapForward&#39;</span>, <span class="co"># to fit linear regression with forward selection</span></a>
+<a class="sourceLine" id="cb2-3" title="3">                   <span class="dt">method =</span> <span class="st">&#39;lm&#39;</span>, <span class="co"># to fit linear regression with forward selection</span></a>
 <a class="sourceLine" id="cb2-4" title="4">                   <span class="dt">preProc =</span> <span class="kw">c</span>(<span class="st">&quot;center&quot;</span>, <span class="st">&quot;scale&quot;</span>) <span class="co"># center and scale the predictors</span></a>
 <a class="sourceLine" id="cb2-5" title="5">                   )</a>
 <a class="sourceLine" id="cb2-6" title="6">linregFit</a></code></pre></div>
+<pre><code>## Linear Regression 
+## 
+## 407 samples
+##  12 predictor
+## 
+## Pre-processing: centered (12), scaled (12) 
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 407, 407, 407, 407, 407, 407, ... 
+## Resampling results:
+## 
+##   RMSE      Rsquared   MAE     
+##   4.936645  0.6990001  3.453216
+## 
+## Tuning parameter &#39;intercept&#39; was held constant at a value of TRUE</code></pre>
+<p>Now, we will fit a linear regression model with forward selection of covariates on the <em>training</em> dataset.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">linforFit &lt;-<span class="st"> </span><span class="kw">train</span>(medv <span class="op">~</span><span class="st"> </span>.,</a>
+<a class="sourceLine" id="cb4-2" title="2">                   <span class="dt">data=</span> training,</a>
+<a class="sourceLine" id="cb4-3" title="3">                   <span class="dt">method =</span> <span class="st">&#39;leapForward&#39;</span>, <span class="co"># to fit linear regression with forward selection</span></a>
+<a class="sourceLine" id="cb4-4" title="4">                   <span class="dt">preProc =</span> <span class="kw">c</span>(<span class="st">&quot;center&quot;</span>, <span class="st">&quot;scale&quot;</span>) <span class="co"># center and scale the predictors</span></a>
+<a class="sourceLine" id="cb4-5" title="5">                   )</a>
+<a class="sourceLine" id="cb4-6" title="6">linforFit</a></code></pre></div>
 <pre><code>## Linear Regression with Forward Selection 
 ## 
 ## 407 samples
-##  13 predictor
+##  12 predictor
 ## 
-## Pre-processing: centered (13), scaled (13) 
+## Pre-processing: centered (12), scaled (12) 
 ## Resampling: Bootstrapped (25 reps) 
 ## Summary of sample sizes: 407, 407, 407, 407, 407, 407, ... 
 ## Resampling results across tuning parameters:
 ## 
 ##   nvmax  RMSE      Rsquared   MAE     
-##   2      5.871234  0.6214965  4.189612
-##   3      5.528025  0.6629391  3.867903
-##   4      5.504101  0.6657585  3.803333
+##   2      5.483778  0.6243150  3.944697
+##   3      5.202688  0.6617251  3.713544
+##   4      5.133811  0.6710893  3.610518
 ## 
 ## RMSE was used to select the optimal model using the smallest value.
 ## The final value used for the model was nvmax = 4.</code></pre>
 </div>
 <div id="evaluating-the-performance-of-this-model-on-the-training-dataset." class="section level3">
 <h3>3.3. Evaluating the performance of this model on the training dataset.</h3>
-<p>As our outcome is numeric, we will use the function <code>postResample</code> in order to estimate the root mean squared error (RMSE), the coefficient of determination (<span class="math inline">\(R^2\)</span>), and the mean absolute error (MAE).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">pred &lt;-<span class="st"> </span><span class="kw">predict</span>(linregFit, testing)</a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="kw">postResample</span>(<span class="dt">pred =</span> pred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
-<pre><code>##      RMSE  Rsquared       MAE 
-## 4.6659300 0.7070089 3.1324774</code></pre>
 <p>The RMSE indicates how close the observed data points are to the model’s predicted values, it can be interpreted as the standard deviation of the unexplained variance, and has the same units as the response variable. A low RMSE indicates a good fit and if we observe that our dependent variable has a range of 44.4 (values between 5.6 and 50) and a standard deviation of 8.74 then we can conclude that the RMSE is low and it indicates a good fit.</p>
 <p>The Rsquared is a goodness-of-fit measure ans also indicates how close the data are to the fitted regression line. The closer to 1 the <span class="math inline">\(R^2\)</span> value is, the better the model fits the data because it means that the model explains a lot of the variability of the response data around its mean. In our case, the model explains 68.8% of the variability so, again, we can say that this is a good model.</p>
 </div>
 <div id="fitting-a-ridge-regression-model-using-your-ridgereg-function-to-the-training-dataset." class="section level3">
 <h3>3.4. Fitting a ridge regression model using your ridgereg() function to the training dataset.</h3>
 <p>To use our own method, the ridgereg() function, … <a href="https://topepo.github.io/caret/using-your-own-model-in-train.html" class="uri">https://topepo.github.io/caret/using-your-own-model-in-train.html</a></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">rr &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;Regression&quot;</span>,</a>
-<a class="sourceLine" id="cb6-2" title="2">              <span class="dt">library =</span> <span class="st">&quot;awesomebonus&quot;</span>,</a>
-<a class="sourceLine" id="cb6-3" title="3">              <span class="dt">loop =</span> <span class="ot">NULL</span>)</a>
-<a class="sourceLine" id="cb6-4" title="4"></a>
-<a class="sourceLine" id="cb6-5" title="5">prm &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">parameter =</span> <span class="st">&quot;lambda&quot;</span>,</a>
-<a class="sourceLine" id="cb6-6" title="6">                  <span class="dt">class =</span> <span class="st">&quot;numeric&quot;</span>,</a>
-<a class="sourceLine" id="cb6-7" title="7">                  <span class="dt">label =</span> <span class="st">&quot;Lambda&quot;</span>)</a>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">ridge_model &lt;-<span class="st"> </span><span class="kw">ridgereg_model</span>()</a>
+<a class="sourceLine" id="cb6-2" title="2"></a>
+<a class="sourceLine" id="cb6-3" title="3">fitControl &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;repeatedcv&quot;</span>,</a>
+<a class="sourceLine" id="cb6-4" title="4">                           <span class="dt">number =</span> <span class="dv">10</span>,</a>
+<a class="sourceLine" id="cb6-5" title="5">                           <span class="dt">repeats =</span> <span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb6-6" title="6"></a>
+<a class="sourceLine" id="cb6-7" title="7">rGrid &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lambda =</span> <span class="dv">1</span><span class="op">*</span><span class="dv">10</span><span class="op">**</span>(<span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)))</a>
 <a class="sourceLine" id="cb6-8" title="8"></a>
-<a class="sourceLine" id="cb6-9" title="9">rr<span class="op">$</span>parameters &lt;-<span class="st"> </span>prm</a>
-<a class="sourceLine" id="cb6-10" title="10"></a>
-<a class="sourceLine" id="cb6-11" title="11">rrGrid &lt;-<span class="st"> </span><span class="cf">function</span>(x, y, <span class="dt">len =</span> <span class="ot">NULL</span>, <span class="dt">search =</span> grid) {</a>
-<a class="sourceLine" id="cb6-12" title="12">  <span class="cf">if</span>(search <span class="op">==</span><span class="st"> </span>grid) {</a>
-<a class="sourceLine" id="cb6-13" title="13">    out &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lambda =</span> <span class="kw">c</span>(<span class="fl">0.01</span>, <span class="dv">100</span>))</a>
-<a class="sourceLine" id="cb6-14" title="14">  } <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb6-15" title="15">    <span class="kw">stop</span>(<span class="st">&#39;random search not yet implemented&#39;</span>)</a>
-<a class="sourceLine" id="cb6-16" title="16">  }</a>
-<a class="sourceLine" id="cb6-17" title="17">  <span class="kw">return</span>(out)</a>
-<a class="sourceLine" id="cb6-18" title="18">}</a>
-<a class="sourceLine" id="cb6-19" title="19"></a>
-<a class="sourceLine" id="cb6-20" title="20">rr<span class="op">$</span>grid &lt;-<span class="st"> </span>rrGrid</a>
-<a class="sourceLine" id="cb6-21" title="21"></a>
-<a class="sourceLine" id="cb6-22" title="22"><span class="co"># Probably needs to use formula??</span></a>
-<a class="sourceLine" id="cb6-23" title="23">rrFit &lt;-<span class="st"> </span><span class="cf">function</span>(x, y, wts, param, lev, last, weights, classProbs, ...) {</a>
-<a class="sourceLine" id="cb6-24" title="24">  <span class="kw">library</span>(awesomebonus)</a>
-<a class="sourceLine" id="cb6-25" title="25">  <span class="kw">print</span>(<span class="kw">head</span>(data))</a>
-<a class="sourceLine" id="cb6-26" title="26">  <span class="kw">ridgereg</span>(y <span class="op">~</span><span class="st"> </span>x, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(data), <span class="dt">lambda =</span> param<span class="op">$</span>lambda, ...)</a>
-<a class="sourceLine" id="cb6-27" title="27">}</a>
-<a class="sourceLine" id="cb6-28" title="28"></a>
-<a class="sourceLine" id="cb6-29" title="29">rr<span class="op">$</span>fit &lt;-<span class="st"> </span>rrFit</a>
-<a class="sourceLine" id="cb6-30" title="30"></a>
-<a class="sourceLine" id="cb6-31" title="31">rr<span class="op">$</span>levels &lt;-<span class="st"> </span><span class="cf">function</span>(x) x<span class="op">@</span>levels</a>
-<a class="sourceLine" id="cb6-32" title="32"></a>
-<a class="sourceLine" id="cb6-33" title="33">rrPred &lt;-<span class="st"> </span><span class="cf">function</span>(modelFit, newdata, <span class="dt">preProc =</span> <span class="ot">NULL</span>, <span class="dt">submodels =</span> <span class="ot">NULL</span>) {</a>
-<a class="sourceLine" id="cb6-34" title="34">  <span class="kw">predict</span>(modelFit, newdata)</a>
-<a class="sourceLine" id="cb6-35" title="35">}</a>
-<a class="sourceLine" id="cb6-36" title="36"></a>
-<a class="sourceLine" id="cb6-37" title="37">rr<span class="op">$</span>predict &lt;-<span class="st"> </span>rrPred</a>
-<a class="sourceLine" id="cb6-38" title="38"></a>
-<a class="sourceLine" id="cb6-39" title="39">rrProb &lt;-<span class="st"> </span><span class="cf">function</span>(modelFit, newdata, <span class="dt">preProc =</span> <span class="ot">NULL</span>, <span class="dt">submodels =</span> <span class="ot">NULL</span>) {</a>
-<a class="sourceLine" id="cb6-40" title="40">  <span class="kw">predict</span>(modelFit, newdata, <span class="dt">type =</span> <span class="st">&quot;prob&quot;</span>)</a>
-<a class="sourceLine" id="cb6-41" title="41">}</a>
-<a class="sourceLine" id="cb6-42" title="42"></a>
-<a class="sourceLine" id="cb6-43" title="43">rr<span class="op">$</span>prob &lt;-<span class="st"> </span>rrProb</a>
-<a class="sourceLine" id="cb6-44" title="44"></a>
-<a class="sourceLine" id="cb6-45" title="45">rrSort &lt;-<span class="st"> </span><span class="cf">function</span>(x) x[<span class="kw">order</span>(x<span class="op">$</span>lambda),]</a>
-<a class="sourceLine" id="cb6-46" title="46"></a>
-<a class="sourceLine" id="cb6-47" title="47">rr<span class="op">$</span>sort &lt;-<span class="st"> </span>rrSort</a>
-<a class="sourceLine" id="cb6-48" title="48"></a>
-<a class="sourceLine" id="cb6-49" title="49">fitControl &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;repeatedcv&quot;</span>,</a>
-<a class="sourceLine" id="cb6-50" title="50">                           <span class="dt">number =</span> <span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb6-51" title="51">                           <span class="dt">repeats =</span> <span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb6-52" title="52"></a>
-<a class="sourceLine" id="cb6-53" title="53">rGrid &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lambda =</span> <span class="kw">c</span>(<span class="fl">0.1</span>, <span class="fl">0.3</span>))</a>
-<a class="sourceLine" id="cb6-54" title="54"></a>
-<a class="sourceLine" id="cb6-55" title="55"><span class="kw">set.seed</span>(<span class="dv">825</span>)</a>
-<a class="sourceLine" id="cb6-56" title="56"><span class="co"># rrTune &lt;- train(medv ~ .,</span></a>
-<a class="sourceLine" id="cb6-57" title="57"><span class="co">#                 data = training,</span></a>
-<a class="sourceLine" id="cb6-58" title="58"><span class="co">#                   method = rr,</span></a>
-<a class="sourceLine" id="cb6-59" title="59"><span class="co">#                   trControl = fitControl,</span></a>
-<a class="sourceLine" id="cb6-60" title="60"><span class="co">#                   tuneGrid = rGrid)</span></a>
-<a class="sourceLine" id="cb6-61" title="61"><span class="co"># </span></a>
-<a class="sourceLine" id="cb6-62" title="62"><span class="co"># linregFit_ridgereg &lt;- train(medv ~ ., </span></a>
-<a class="sourceLine" id="cb6-63" title="63"><span class="co">#                             data = training, </span></a>
-<a class="sourceLine" id="cb6-64" title="64"><span class="co">#                             method = &quot;ridgereg&quot;, </span></a>
-<a class="sourceLine" id="cb6-65" title="65"><span class="co">#                             preProc = c(&quot;center&quot;, &quot;scale&quot;)</span></a>
-<a class="sourceLine" id="cb6-66" title="66"><span class="co">#                             )</span></a>
-<a class="sourceLine" id="cb6-67" title="67"><span class="co"># </span></a>
-<a class="sourceLine" id="cb6-68" title="68"></a>
-<a class="sourceLine" id="cb6-69" title="69"></a>
-<a class="sourceLine" id="cb6-70" title="70"><span class="co"># Setting &quot;formula&quot;, &quot;data&quot; and &quot;lambda&quot; arguments</span></a>
-<a class="sourceLine" id="cb6-71" title="71"><span class="co">#ridge &lt;- ridgereg$new(formula=air_time~dep_delay+arr_delay, data=flights, lambda=2)</span></a></code></pre></div>
+<a class="sourceLine" id="cb6-9" title="9"><span class="kw">set.seed</span>(<span class="dv">825</span>)</a>
+<a class="sourceLine" id="cb6-10" title="10">rrTune &lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">form =</span> medv <span class="op">~</span><span class="st"> </span>.,</a>
+<a class="sourceLine" id="cb6-11" title="11">                <span class="dt">data =</span> training,</a>
+<a class="sourceLine" id="cb6-12" title="12">                <span class="dt">method =</span> ridge_model,</a>
+<a class="sourceLine" id="cb6-13" title="13">                <span class="dt">trControl =</span> fitControl, </a>
+<a class="sourceLine" id="cb6-14" title="14">                <span class="dt">tuneGrid =</span> rGrid)</a></code></pre></div>
 </div>
 <div id="finding-the-best-hyperparameter-value-for-" class="section level3">
 <h3>3.5. Finding the best hyperparameter value for λ</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="co"># fitControl &lt;- trainControl(method = &quot;none&quot;,</span></a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="co">#                            number = 10,</span></a>
-<a class="sourceLine" id="cb7-3" title="3"><span class="co">#                            repeats = 3,</span></a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="co">#                            summaryFunction = defaultSummary,</span></a>
-<a class="sourceLine" id="cb7-5" title="5"><span class="co">#                            search = &quot;random&quot;)</span></a>
-<a class="sourceLine" id="cb7-6" title="6"><span class="co"># </span></a>
-<a class="sourceLine" id="cb7-7" title="7"><span class="co"># set.seed(825)</span></a>
-<a class="sourceLine" id="cb7-8" title="8"><span class="co"># rda_fit &lt;- train(Class ~ ., data = training, </span></a>
-<a class="sourceLine" id="cb7-9" title="9"><span class="co">#                   method = &quot;rda&quot;,</span></a>
-<a class="sourceLine" id="cb7-10" title="10"><span class="co">#                   metric = &quot;ROC&quot;,</span></a>
-<a class="sourceLine" id="cb7-11" title="11"><span class="co">#                   tuneLength = 30,</span></a>
-<a class="sourceLine" id="cb7-12" title="12"><span class="co">#                   trControl = fitControl)</span></a>
-<a class="sourceLine" id="cb7-13" title="13"><span class="co"># rda_fit</span></a></code></pre></div>
+<table>
+<caption>Evaluation of the Hyper parameters</caption>
+<thead>
+<tr class="header">
+<th align="right">lambda</th>
+<th align="right">RMSE</th>
+<th align="right">Rsquared</th>
+<th align="right">MAE</th>
+<th align="right">RMSESD</th>
+<th align="right">RsquaredSD</th>
+<th align="right">MAESD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1e+01</td>
+<td align="right">1081.80502</td>
+<td align="right">0.0138377</td>
+<td align="right">857.46672</td>
+<td align="right">183.3210395</td>
+<td align="right">0.0201454</td>
+<td align="right">168.6486232</td>
+</tr>
+<tr class="even">
+<td align="right">1e+02</td>
+<td align="right">774.45141</td>
+<td align="right">0.0165158</td>
+<td align="right">594.86864</td>
+<td align="right">133.2971561</td>
+<td align="right">0.0299982</td>
+<td align="right">105.0012567</td>
+</tr>
+<tr class="odd">
+<td align="right">1e+03</td>
+<td align="right">362.14297</td>
+<td align="right">0.0185849</td>
+<td align="right">289.65764</td>
+<td align="right">59.9349278</td>
+<td align="right">0.0332549</td>
+<td align="right">51.6935585</td>
+</tr>
+<tr class="even">
+<td align="right">1e+04</td>
+<td align="right">92.89401</td>
+<td align="right">0.0179647</td>
+<td align="right">78.87688</td>
+<td align="right">11.1457117</td>
+<td align="right">0.0272574</td>
+<td align="right">11.1899320</td>
+</tr>
+<tr class="odd">
+<td align="right">1e+05</td>
+<td align="right">29.25289</td>
+<td align="right">0.0178033</td>
+<td align="right">26.70745</td>
+<td align="right">1.0304500</td>
+<td align="right">0.0261743</td>
+<td align="right">0.6774547</td>
+</tr>
+<tr class="even">
+<td align="right">1e+06</td>
+<td align="right">24.54488</td>
+<td align="right">0.0177857</td>
+<td align="right">22.85256</td>
+<td align="right">0.7776469</td>
+<td align="right">0.0260632</td>
+<td align="right">0.5515329</td>
+</tr>
+<tr class="odd">
+<td align="right">1e+07</td>
+<td align="right">24.18757</td>
+<td align="right">0.0177840</td>
+<td align="right">22.47926</td>
+<td align="right">0.7702453</td>
+<td align="right">0.0260520</td>
+<td align="right">0.5519546</td>
+</tr>
+<tr class="even">
+<td align="right">1e+08</td>
+<td align="right">24.15327</td>
+<td align="right">0.0177838</td>
+<td align="right">22.44182</td>
+<td align="right">0.7695772</td>
+<td align="right">0.0260509</td>
+<td align="right">0.5520936</td>
+</tr>
+<tr class="odd">
+<td align="right">1e+09</td>
+<td align="right">24.14985</td>
+<td align="right">0.0177838</td>
+<td align="right">22.43808</td>
+<td align="right">0.7695111</td>
+<td align="right">0.0260508</td>
+<td align="right">0.5521085</td>
+</tr>
+<tr class="even">
+<td align="right">1e+10</td>
+<td align="right">24.14951</td>
+<td align="right">0.0177838</td>
+<td align="right">22.43771</td>
+<td align="right">0.7695045</td>
+<td align="right">0.0260508</td>
+<td align="right">0.5521100</td>
+</tr>
+</tbody>
+</table>
+<p>Looking at RMSE vs. lambda in a plot. <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAw1BMVEUAAAAAADoAAGYAOpAAZrYAv8QzMzM6AAA6ADo6AGY6kNtNTU1NTW5NTY5NbqtNjshmAABmADpmtv9uTU1uTW5uTY5ubo5ubqtuq8huq+SOTU2OTW6OTY6Obk2ObquOyP+QOgCQkGaQtpCQ27aQ2/+rbk2rbm6rjk2ryKur5OSr5P+2ZgC2kDq2///Ijk3I///bkDrbkJDb///kq27k///r6+v4dm3/tmb/yI7/25D/29v/5Kv//7b//8j//9v//+T////1Tf7XAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAK10lEQVR4nO2dDVvbNhDHRSGjJW3HwrquXTdC15etDMhK7cACqb//p5okO8QvsqWLT9ad0T1PMfkjW7pfTrJj8L8ii9EZIvQAqIcIPQDqIUIPgHqI0AOgHiL0AKiHCD0A6iF22it5iNK35eAvR0AWGQfQREbAJHzKCIAmD0EsNxS5P6DJpIMQxZRhcm9Ak0kXIYopw+S+gCaTTkIUU4bJEZBFjoAsck9AdT51QhRThskRkEXGApSmEVAEtAOgpA6IUm4oMh6gNALqAjSJgMyAaiVEKjcUuR8gFeUS2vkg9EPstJdmvAVE7M1HkREAJTkjOcdCJeFTxgGkjxgBRUB9ATUJUUwZJiMCMpUQxZRhMi6gBiGKKcNkTECGEqKYMkyOgCwyMqA6IYopw2RUQM0SopgyTI6ALDI2oLStI64yLqBGCVFMGSZHQBYZHVDa0hFXGRlQvYQopgyT8QGl5o58JuFTxgaUREARUF9AqbEjn0n4lNEBJRFQBNQXUGqSfSbhU8YHlERAVkCpSfaYhE/ZAdDqZPriKsvu305ffnvYdABKHhmg+7en2fXLb98/ys2PWbGJgEoF9Ppbdv/bl/t3V9nq1VWxsQBKTbK/JHzKzoCqG6n/IKNllzRtPRrbEK0/0VPs+Zebl5pMsSl+1vJOPK4KUov0r5+aFdQJKDXJ3pLwKTsAUlX07gqwBpVKiGLKMNlhisl60aevN6WNFVA6ZBI+ZYcKupmWL4AcroOSbQlRTBkmu02xtmjtKAKyAkoHTMKn7AlQEgFFQH0BpcMl4VP2BSiJgCKgvoDSwZLwKXsDlERAVkApzZRhsj9ASQRkBWR4ws5LEj5lf4AentLk/ZSUN0DtT0IPlhuK7AtQ5VFxzk9qegJUeRKa9bO+PgG1lxBFEi2yZ0AtqxBFEi2yH0ANwwq+jhURkEX2DYi954lfQCMwhfEDaESmMBGQRfYOiLspTD9A7VEtIeSDhwix014d70QZUKA3H0X2Bqh0MR0qNxTZH6Bk85HefxI+Za+AlBwBWTqKgCwdcfdd8g6Iu61QBGSRIyCLPAQg1r5L/gExN6aKgCzyIIA4+y4NAIi3MVUEZJEjIIs8DCDGxlRDAGLt3NUAdHc8y7Llk4viSwQUAXXLAwHi69w1CCDO1mYRkEUeChBba7NhADH2fjMAEpuIgBKnC8XvH6fPvwAf6q3LowZ0eZrdgMxNDB3xdQ80AFrsfdAT7Sh/qawEio2zsUBTHhGgpeSznh9IRjmh1evPaopBzE0Mwd7vRGy+Wc8ll9tDeSpb7H9VwurkVNGBmJsY5PFUUH6al1W0Oc232eNAATE1xzMD0sVTALr/A2qwZOxoNIDW85legrLsPJ9i6iwm6wZkbmKQRwNIVY9egpZilgvyygdm8mbsiKu9YhNQdq7O8Ou5WoZsAel/PIAAAek/ArL0HwFZ+mdq0DkcIKb+kw1A67mP2x0qRgJInt4353f0CuJor9gElOkTvRsjWP/jAZRPNAdGsP7HBEgzQl6DRgVIVhD2lTRTB1MTIEc6YEAsHUybgJaudB4pIH/XQSMBBApg/xw9cLsA/YtdQRwtXg2A5GWiuqF4d4w+xcYBaPHkQv1mw+kTB7R/hh64DUD61z7L/X9EcUcaFRBDi9cGIP1bjdvDze9VI6AWQE58HjGgp16upDmaBA8MiJ8HbgRkkQ2A/H3USMYAyHOkXP8ORuy01w5vEDcX5QjIIgcAxMtFeXBA3GymIyCLHAFZ5BCAUpIkWuThASURkKV/s+9bnyR8yoMDajWfxM8NRR4aUNkB13duKPLAgLoccCMglk7uYQAxcnIPAah1jj16QA0bbgY+3BGQRQ4EiI+TexBAnKzuBwXE0ag8DKBJBGSWIyBb/9U55jk3FHlgQJUzve/cUOShAW0vppl44A4OKMkZsTEJdgB0M8V4qLcuczEJtgNST8lvXU12NDcxyKMBVEDqayzQkEcFSNZMT3OTZjD7Ow/R8bPVyfMvWU9zE4PMw+LVBVCGYG5ikHlYvLoByi5P0dcgJgaddkDFpOprbmKQWRh0OlTQ9bS/yZtZHgmgjujZfwRkBUTfPTAoIA72iqEBkfd+CwuIgTlecEDUrc0CA6Lv/RYBWeTwgIg7d4UGRN7ajAAg2sZUwQFRd+6KgCwyBUCkfZfCAyJuTEUCEGXXHAKAaNsK0QBE2BSGAiDSrjkRkEUmAoiu5wkJQJRNYagAIutYQQMQYUsPMoCoGjL0A4QX5P8WRuy0F977NtIKwhtW8XBCv4P4kKkAan+QNQJS0fGcZgSU5H853fqobwS0eVic5MPQdAARfVo8ArLIFAA1nmSl9KQmIUA0H4amBchsexIBlQkZLqgfPaAtoaKIkHJDkYkByhEh5YYikwOUz7PaD3scu69MAlCVUBnRVqwfooUbukwDUIVQom9+pAbZ0LzlKHgyEUCN0WpE1cIyNa4k50WmAiip13ualq6sq2m0cPMjEwJUlxuIjDn4lgkDSiY1QhFQ8wK7iigCagCaVOaZMQfPMnVABaKhgxOgIIhYAGpZJ6hPMcyHencCRHyRxjM3GSkgTGMBq2zMgTggPHMTlyiP1ayWdJ+yOyBEcxMXufEWN95n3zIUEKK5iaNcp1PNwrsMBTToGtQlm7j5kKGAMM1NWMhQQENeB5GQwYBgATvPUW4tQPv36IhrawHav0dHXFsL0P49OuLaWoD2f4QhQg+AeojQA6AeIvQAqIcIPQDqITwcc3UynZ4C2qubce5ttXeh+0heXNmbFY1fXdU+MKgQzp05h/rQv/rZPYvsGoDz8lTfeXEfybVr6xvFsnrjVIVwHppz3KgOLt1zXv3yu3NjdVPBPfQ9Gsc9Lp//JSuoetNChQD0B4jtrSNrfP/0t/sUW73+DJhioArSYKq3vVQI185AoW6OuMb1G8AatDo51Uk4RmNF6Ty2BFS9capCuO4Oifu37nxkuhBAjXe4s7VcCW+cV+nhKki9zc5xPVXhCvT+DwigZj10xWqoNQjERwXkNH8JmWLwCqreOFUhnIfmHHlNACBBAMlVxf3KRv3PF+5L+mDXQeMKEXoA1EOEHgD1EKEHQD1E6AFQDxF6ANRDhOr49ukHg3r3k1bPhdj/Krfr+czcrrb/8slF7QhoIVCPBghz4ud7Sl3sf13PD9Q3By3t2gFlS40WLQTmwSBhSvzuWChAd8ezPGdVDWBAsuowxykwDwYJleB6LoQqFAXm/bOLbHmg09ZfFCVZSfrF7aEQ4kh++15+c6RezeSLs3weqp3PJKCiEXYJCcRjgUImrqaR+nd3fCT/6SLQbHQ9SEDr+ZFWdEUtnlzcHsrUF4pK8aK886ZR2+TdNQTisUAh09Ag5Be9XTQAHemcpfLf1/wnt4fq9eGs9KI4iNx506iYoWghEI8FCpWbmgtyu9DbZ40K2gCSipw9ex+2808BepY32u6cN1KL0BHiOAXisUDRAWhTBxtAd8d7erHuBLRpNCpAex+2U2y5nWKbs9gGkAa5rFdQsX2Yp0WjMU2xtkU6Oy+ug86PHkDeHtYBPSzSB3rnTaMxLdKV0/xZCZC6klb6sjjNy5d7fx7PahV0Vt25aKQvMxHHKRCP1StMVy87fWwYy4ViKdTsyD9a1GNhEm1HG8lHjXIsRD5bGrFDNYzmwyqXEKEHQD1E6AFQDxF6ANRDhB4A9RChB0A9ROgBUI//AfnhSySQTnTFAAAAAElFTkSuQmCC" /><!-- --></p>
+<p>We can conclude that lambda <span class="math inline">\(1*10^5\)</span> or <span class="math inline">\(1*10^6\)</span> gives the best RMSE and with the lowest lambda. Using <span class="math inline">\(lambda = 1*10^6\)</span> for the test dataset.</p>
+</div>
+<div id="evaluate-performance-of-all-three-models-on-test-dataset." class="section level3">
+<h3>3.6. Evaluate performance of all three models on test dataset.</h3>
+<p>As our outcome is numeric, we will use the function <code>postResample</code> in order to estimate the root mean squared error (RMSE), the coefficient of determination (<span class="math inline">\(R^2\)</span>), and the mean absolute error (MAE).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">pred &lt;-<span class="st"> </span><span class="kw">predict</span>(linregFit, testing)</a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="kw">postResample</span>(<span class="dt">pred =</span> pred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
+<pre><code>##      RMSE  Rsquared       MAE 
+## 4.9175144 0.7662461 3.4695833</code></pre>
+<p>And the same for the forward looking model.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">forpred &lt;-<span class="st"> </span><span class="kw">predict</span>(linforFit, testing)</a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="kw">postResample</span>(<span class="dt">pred =</span> forpred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
+<pre><code>##      RMSE  Rsquared       MAE 
+## 5.3186235 0.7276018 3.7590763</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">my_ridge &lt;-<span class="st"> </span>ridgereg<span class="op">$</span><span class="kw">new</span>(medv<span class="op">~</span>., <span class="dt">data=</span>training, <span class="dt">lambda =</span> <span class="dv">10</span><span class="op">**</span><span class="dv">6</span>)</a>
+<a class="sourceLine" id="cb11-2" title="2">X_test &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw">select</span>(testing, <span class="op">-</span>medv)</a>
+<a class="sourceLine" id="cb11-3" title="3">ridge_pred &lt;-<span class="st"> </span>my_ridge<span class="op">$</span><span class="kw">predict</span>(X_test)</a>
+<a class="sourceLine" id="cb11-4" title="4"><span class="kw">postResample</span>(<span class="dt">pred =</span> ridge_pred, <span class="dt">obs =</span> testing<span class="op">$</span>medv)</a></code></pre></div>
+<pre><code>##         RMSE     Rsquared          MAE 
+## 25.538609764  0.001269284 23.424831083</code></pre>
+<p>We can see that in this example both the linear models have better performance for all three evaluation variables (RMSE, <span class="math inline">\(R^2\)</span> and MAE). Conclusion is that this dataset was well-adapted for the linear models.</p>
 </div>
 </div>
 <div id="references." class="section level2">
