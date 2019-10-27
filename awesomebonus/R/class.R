@@ -12,8 +12,15 @@
 #' @field arguments a vector containing the function call.
 #' 
 #' @examples
-#' data("flights")
-#' example <- ridgereg$new(formula = air_time~dep_delay + arr_delay, data = flights, lambda = 10**6)
+#' library(dplyr)
+#' library(mlbench)
+#' data("BostonHousing")
+#' set.seed(42)
+#' 
+#' dataSet <- dplyr::select(BostonHousing, -c(chas))
+#' 
+#' example <- ridgereg$new(formula = medv~., data = dataSet, lambda = 10**6)
+#' example$regression_coefficients
 #' 
 #' @references Reference Classes: \url{http://adv-r.had.co.nz/R5.html}
 #' 
@@ -22,7 +29,6 @@
 #' 
 #' @importFrom methods new
 #' @importFrom ggplot2 ggplot
-#' @importFrom cowplot plot_grid
 #'
 #' @export ridgereg
 #' @exportClass ridgereg

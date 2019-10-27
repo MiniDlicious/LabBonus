@@ -16,13 +16,16 @@ Depends: R (>= 3.5.0)
 Imports: 
     methods,
     ggplot2,
-    cowplot,
     dplyr,
     nycflights13,
     maps,
-    caret
+    caret,
+    corrplot,
+    mlbench,
+    MASS
 Suggests: 
     roxygen2,
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    stats
