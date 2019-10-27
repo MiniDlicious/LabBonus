@@ -5,8 +5,11 @@ library(mlbench)
 data("BostonHousing")
 
 set.seed(107)
+
+dataSet <- dplyr::select(BostonHousing, -c(chas))
+
 inTrain <- createDataPartition(
-  y = BostonHousing$medv,
+  y = dataSet$medv,
   ## the outcome data are needed
   p = .8,
   ## The percentage of data in the
@@ -14,10 +17,9 @@ inTrain <- createDataPartition(
   list = FALSE
 )
 
-training <- BostonHousing[ inTrain,] 
-testing  <- BostonHousing[-inTrain,]
+training <- dataSet[ inTrain,] 
+testing  <- dataSet[-inTrain,]
 
-training <- dplyr::select(training, -c(chas))
 
 
 rr <- list(type = "Regression",
@@ -94,4 +96,10 @@ ggplot(rrTune$results) +
   scale_x_continuous(breaks=seq(0,24,2))
 
 my_ridge <- ridgereg$new(medv~., data=training, lambda = 10**6)
-pred <- my_ridge$predict(dplyr::select(testing, -medv))
+X_test <- dplyr::select(testing, -medv)
+pred <- my_ridge$predict(X_test)
+
+rmse(pred - testing$medv)
+
+pred2 <- my_ridge$predict(dplyr::select(training, -medv))
+rmse(pred2 - training$medv)

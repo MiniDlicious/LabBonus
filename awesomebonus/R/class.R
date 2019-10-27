@@ -104,7 +104,7 @@ ridgereg <- setRefClass ("ridgereg",
     },
     predict = function(newdata){
       "Calculate predictions based on fitted values and new x data."
-      predicted_y <- rowSums(regression_coefficients[[1]] + newdata * regression_coefficients[[-1]])
+      predicted_y <- rowSums(regression_coefficients[1] + newdata * regression_coefficients[-1])
       
       return(predicted_y)
     },
