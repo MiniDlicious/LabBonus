@@ -88,7 +88,8 @@ The Rsquared is a goodness-of-fit measure ans also indicates how close the data 
 
 ### 3.4. Fitting a ridge regression model using your ridgereg() function to the training dataset.
 
-To use our own method, the ridgereg() function, ... https://topepo.github.io/caret/using-your-own-model-in-train.html
+To use our own method, the ridgereg() function, we have created the `ridgereg_model()` function in order to generate a custom model object for the caret package (for more information and references about using one's own model in train, run `?ridgereg_model`)
+
 ```{r}
 ridge_model <- ridgereg_model()
 
@@ -117,15 +118,14 @@ kable(rrTune$results, caption = "Evaluation of the Hyper parameters")
 ```
 
 Looking at RMSE vs. lambda in a plot.
-```{r echo = FALSE}
 
+```{r echo = FALSE, fig.align='center'}
 library(ggplot2)
 ggplot(rrTune$results) + 
   geom_point(aes(x= log10(lambda), y = RMSE, colour="#2c3e50", size=2)) + 
   geom_line(aes(x= log10(lambda), y = RMSE, colour="#2980b9", size=1)) + 
   theme(legend.position = "none") + 
   scale_x_continuous(breaks=seq(0,24,2))
-
 ```
 
 We can conclude that lambda $1*10^5$ or $1*10^6$ gives the best RMSE and with the lowest lambda. Using $lambda = 1*10^6$ for the test dataset.

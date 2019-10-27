@@ -1,9 +1,9 @@
 ---
-title: "flight_delay"
+title: "Predictive modeling of flight delays using ridgereg()"
 author: "Martin Svensson and Laura Julià Melis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{awesomelab4: A linear regression package}
+  %\VignetteIndexEntry{awesomebonus: A linear regression package}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -15,7 +15,8 @@ library(nycflights13)
 library(awesomebonus)
 ```
 
-### Initialization.
+## 1.  Initialization.
+First of all, we will read three different datasets and remove unnnecesary variables (columns).
 ```{r}
 # Load the datasets
 flights_data <- nycflights13::flights
@@ -44,9 +45,9 @@ joined_data$total_delay <- joined_data$arr_delay + joined_data$dep_delay
 
 ```
 
-
+## 2.  Dataset division.
+Now we will use the *caret* package to divide the flight dataset into three sets: test (5%), train (80%) and validation (15%).
 ```{r}
-# Use Caret to divide the dataset into test (5%), train (80%) and validation (15%).
 library(caret)
 set.seed(42)
 trainIndex <- createDataPartition(joined_data$total_delay, p = .8, 
@@ -58,18 +59,16 @@ validationIndex <- createDataPartition(nontrainSet$total_delay, p = .75,
                                   times = 1)
 validationSet <- joined_data[validationIndex, ]
 testSet <- joined_data[-validationIndex, ]
-
 ```
 
-```{r}
+```{r, fig.align='center'}
 # Use Caret to divide the dataset into test (5%), train (80%) and validation (15%).
 library(corrplot)
 corrplot.mixed(cor(trainSet), order="hclust", tl.col="black")
-
 ```
 
+## 3. Training ridge regressions models for different values of lambda.
 ```{r}
-# Make predictions and evaluate
 ridge_model <- ridgereg_model()
 
 fitControl <- trainControl(method = "repeatedcv",
@@ -84,16 +83,17 @@ rrTune <- train(form = dep_delay ~ .,
                 method = ridge_model,
                 trControl = fitControl, 
                 tuneGrid = rGrid)
-
 ```
 
 ```{r echo = FALSE}
 library(knitr)
 kable(rrTune$results, caption = "Evaluation of the Hyper parameters")
-
 ```
 
+From the table above these lines we can observe that we obtain the lowest values of RMSE and when $\lambda= 1e+09$. So we would say that this is the optimal value.
 
+## 4. Making predictions. 
+Finally, we will use the optimal value of $\lambda$ to predict the test set.
 ```{r}
 my_ridge <- ridgereg$new(dep_delay~., data=trainSet, lambda = 10**9)
 X_test <- dplyr::select(testSet, -dep_delay)
